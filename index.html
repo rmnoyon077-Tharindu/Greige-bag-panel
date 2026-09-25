@@ -1,0 +1,3226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greige Bag Request Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#0b1c3d;
+    --navy-900:#0f2557;
+    --navy-800:#153477;
+    --blue-600:#2563eb;
+    --blue-500:#3b82f6;
+    --blue-100:#dbeafe;
+    --blue-50:#eef4ff;
+    --slate-900:#101828;
+    --slate-600:#4b5768;
+    --slate-400:#8896a8;
+    --slate-200:#e2e8f2;
+    --slate-100:#f1f5fb;
+    --green-600:#0f9d63;
+    --green-100:#d8f5e6;
+    --orange-600:#e08a1f;
+    --orange-100:#fdead0;
+    --purple-600:#6f4fd1;
+    --purple-100:#e9e2fb;
+    --red-600:#e0453f;
+    --red-100:#fbe2e1;
+    --white:#ffffff;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-card:0 1px 2px rgba(15,37,87,.06),0 8px 24px -12px rgba(15,37,87,.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Manrope',system-ui,sans-serif;
+    background:var(--slate-100);
+    color:var(--slate-900);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif;margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+  ::selection{background:var(--blue-100);}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    position:fixed;inset:0;z-index:50;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(59,130,246,.35), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(111,79,209,.28), transparent 45%),
+      linear-gradient(160deg,var(--navy-950),var(--navy-900) 55%,#122a63 100%);
+    padding:24px;
+  }
+  .login-card{
+    width:100%;max-width:960px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:24px;
+    display:grid;grid-template-columns:1.1fr 1fr;
+    overflow:hidden;
+    backdrop-filter:blur(18px);
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+  }
+  .login-visual{
+    padding:48px 40px;
+    color:#fff;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 26px),
+      linear-gradient(200deg,#173a8a,#0e1f4a);
+    display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;
+  }
+  .login-visual .stack{display:flex;align-items:center;gap:14px;}
+  .logo-mark{
+    width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(160deg,#fff,#c9d9ff);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+    flex:none;
+  }
+  .logo-mark svg{width:24px;height:24px;}
+  .login-visual h1{font-size:22px;line-height:1.25;}
+  .login-visual p.tag{color:#b9c8ee;font-size:13px;margin-top:6px;}
+  .bag-stack{display:flex;flex-direction:column;gap:10px;margin-top:36px;}
+  .bag-row{display:flex;gap:8px;}
+  .bag{width:34px;height:26px;border-radius:5px;background:linear-gradient(160deg,#e7ecf9,#b9c6e6);opacity:.9;}
+  .stat-strip{display:flex;gap:22px;margin-top:auto;padding-top:28px;border-top:1px solid rgba(255,255,255,.15);}
+  .stat-strip div span{display:block;}
+  .stat-strip .num{font-family:'Sora';font-size:20px;font-weight:700;}
+  .stat-strip .lbl{font-size:11px;color:#a9bbe8;margin-top:2px;}
+
+  .login-form-wrap{padding:52px 46px;background:var(--white);display:flex;flex-direction:column;justify-content:center;}
+  .login-form-wrap h2{font-size:24px;color:var(--slate-900);}
+  .login-form-wrap p.sub{color:var(--slate-600);font-size:13.5px;margin-top:6px;margin-bottom:30px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--slate-600);margin-bottom:6px;letter-spacing:.2px;}
+  .field input, .field select{
+    width:100%;padding:12px 14px;border-radius:10px;
+    border:1.5px solid var(--slate-200);font-size:14px;
+    outline:none;transition:border-color .15s, box-shadow .15s;
+    background:var(--slate-100);
+  }
+  .field input:focus, .field select:focus{border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100);background:#fff;}
+  .btn-primary{
+    width:100%;padding:13px 16px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,var(--blue-600),var(--navy-800));
+    color:#fff;font-weight:700;font-size:14.5px;
+    box-shadow:0 10px 24px -8px rgba(37,99,235,.55);
+    transition:transform .12s ease;
+  }
+  .btn-primary:active{transform:scale(.98);}
+  .login-hint{margin-top:16px;font-size:12px;color:var(--slate-400);text-align:center;}
+  .login-error{display:none;background:var(--red-100);color:var(--red-600);font-size:12.5px;padding:9px 12px;border-radius:8px;margin-bottom:14px;font-weight:600;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;min-height:100vh;}
+  .app-shell{display:grid;grid-template-columns:258px 1fr;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    background:linear-gradient(195deg,var(--navy-950),var(--navy-900) 70%);
+    color:#dbe4fb;
+    padding:22px 16px;
+    display:flex;flex-direction:column;
+    position:sticky;top:0;height:100vh;
+  }
+  .brand{display:flex;align-items:center;gap:12px;padding:4px 8px 22px 8px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:16px;}
+  .brand .logo-mark{width:38px;height:38px;border-radius:10px;}
+  .brand .logo-mark svg{width:20px;height:20px;}
+  .brand-text{font-family:'Sora';font-size:14.5px;font-weight:700;color:#fff;line-height:1.25;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 14px;border-radius:10px;margin-bottom:4px;
+    font-size:14px;font-weight:600;color:#b9c6e8;
+    transition:background .15s,color .15s;
+    user-select:none;
+  }
+  .nav-item svg{width:18px;height:18px;flex:none;opacity:.85;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:linear-gradient(135deg,var(--blue-600),#3b6cf0);color:#fff;box-shadow:0 8px 18px -6px rgba(37,99,235,.6);}
+  .nav-spacer{flex:1;}
+  .nav-footer{border-top:1px solid rgba(255,255,255,.1);padding-top:14px;font-size:11px;color:#7c8ab0;display:flex;align-items:center;gap:10px;}
+  .nav-footer .logo-mark{width:28px;height:28px;border-radius:8px;}
+  .nav-footer .logo-mark svg{width:16px;height:16px;}
+
+  /* Main column */
+  .main-col{display:flex;flex-direction:column;min-width:0;}
+  .topbar{
+    position:relative;
+    padding:26px 34px;
+    color:#fff;
+    background:
+      linear-gradient(100deg, rgba(11,28,61,.92) 0%, rgba(15,37,87,.72) 42%, rgba(15,37,87,.35) 100%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 3px, transparent 3px 34px),
+      linear-gradient(120deg,#1a3a86,#0d2050);
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:"";position:absolute;right:-40px;top:-60px;width:260px;height:260px;
+    background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);
+  }
+  .topbar-left{display:flex;align-items:center;gap:16px;z-index:1;}
+  .topbar .logo-mark{width:52px;height:52px;border-radius:14px;}
+  .topbar .logo-mark svg{width:28px;height:28px;}
+  .topbar h1{font-size:22px;line-height:1.2;}
+  .topbar .sub{font-size:12.5px;color:#c3d1f3;margin-top:5px;letter-spacing:.2px;}
+  .topbar-right{display:flex;align-items:center;gap:18px;z-index:1;}
+  .datetime-chip{
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
+    padding:9px 14px;border-radius:10px;font-size:12.5px;display:flex;gap:8px;align-items:center;
+    backdrop-filter:blur(6px);white-space:nowrap;
+  }
+  .profile-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:6px 12px 6px 6px;border-radius:30px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(160deg,#fff,#a9c0f5);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy-900);font-size:13px;}
+  .profile-chip .pname{font-size:12.5px;font-weight:700;line-height:1.2;}
+  .profile-chip .prole{font-size:10.5px;color:#c3d1f3;}
+
+  .content{padding:28px 34px 60px 34px;flex:1;}
+  .page{display:none;}
+  .page.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .page-head{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .page-head .icon-badge{width:42px;height:42px;border-radius:12px;background:var(--blue-50);color:var(--blue-600);display:flex;align-items:center;justify-content:center;flex:none;}
+  .page-head .icon-badge svg{width:22px;height:22px;}
+  .page-head h2{font-size:22px;color:var(--slate-900);}
+  .page-head p{font-size:13px;color:var(--slate-600);margin-top:3px;}
+
+  /* KPI cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px;}
+  .kpi-card{
+    border-radius:var(--radius-lg);padding:20px 22px;color:#fff;position:relative;overflow:hidden;
+    box-shadow:var(--shadow-card);
+  }
+  .kpi-card::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.08);backdrop-filter:blur(2px);}
+  .kpi-card.blue{background:linear-gradient(135deg,#3b82f6,#1d4fd8);}
+  .kpi-card.green{background:linear-gradient(135deg,#12b981,#0a7a56);}
+  .kpi-card.orange{background:linear-gradient(135deg,#f5a742,#d9790f);}
+  .kpi-card.purple{background:linear-gradient(135deg,#8b6be0,#5f3fc9);}
+  .kpi-row{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+  .kpi-icon{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:none;}
+  .kpi-icon svg{width:24px;height:24px;}
+  .kpi-label{font-size:12.5px;font-weight:600;opacity:.92;}
+  .kpi-value{font-family:'Sora';font-size:26px;font-weight:700;margin-top:2px;}
+
+  /* Panels */
+  .panel{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);border:1px solid var(--slate-200);}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--slate-100);gap:12px;flex-wrap:wrap;}
+  .panel-head h3{font-size:15.5px;display:flex;align-items:center;gap:9px;}
+  .panel-head h3 svg{width:18px;height:18px;color:var(--blue-600);}
+  .search-box{position:relative;}
+  .search-box input{padding:9px 12px 9px 34px;border:1.5px solid var(--slate-200);border-radius:9px;font-size:13px;width:230px;background:var(--slate-100);outline:none;}
+  .search-box input:focus{border-color:var(--blue-500);background:#fff;}
+  .search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--slate-400);}
+  .link-btn{color:var(--blue-600);font-size:13px;font-weight:700;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--slate-400);font-weight:700;padding:10px 22px;background:var(--slate-100);
+  }
+  tbody td{padding:13px 22px;border-bottom:1px solid var(--slate-100);color:var(--slate-900);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--blue-50);}
+  .po-link{color:var(--blue-600);font-weight:700;}
+  .mono{font-variant-numeric:tabular-nums;}
+
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .status-pill.Pending{background:var(--orange-100);color:var(--orange-600);}
+  .status-pill.Approved{background:var(--green-100);color:var(--green-600);}
+  .status-pill.Issued{background:var(--blue-100);color:var(--blue-600);}
+  .status-pill.Rejected{background:var(--red-100);color:var(--red-600);}
+  .status-pill.Active{background:var(--green-100);color:var(--green-600);}
+  .status-pill.Inactive{background:var(--red-100);color:var(--red-600);}
+  .status-pill.Neutral{background:var(--slate-100);color:var(--slate-600);}
+  .status-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  .dashboard-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:20px;margin-bottom:20px;}
+  .quick-grid{display:grid;grid-template-columns:repeat(3,1fr) 1.1fr;gap:20px;}
+  .qa-card{padding:22px;display:flex;flex-direction:column;gap:14px;}
+  .qa-top{display:flex;align-items:center;gap:12px;}
+  .qa-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .qa-icon svg{width:22px;height:22px;color:#fff;}
+  .qa-icon.b1{background:linear-gradient(135deg,#3b82f6,#1d4fd8);}
+  .qa-icon.b2{background:linear-gradient(135deg,#12b981,#0a7a56);}
+  .qa-icon.b3{background:linear-gradient(135deg,#8b6be0,#5f3fc9);}
+  .qa-card h4{font-size:14.5px;}
+  .qa-card p{font-size:12.5px;color:var(--slate-600);line-height:1.5;flex:1;}
+  .qa-btn{border:none;border-radius:9px;padding:10px 14px;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .qa-btn svg{width:16px;height:16px;}
+  .qa-btn.b1{background:var(--blue-600);}
+  .qa-btn.b2{background:var(--green-600);}
+  .qa-btn.b3{background:var(--purple-600);}
+
+  .donut-wrap{padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .donut-legend{width:100%;display:flex;flex-direction:column;gap:9px;}
+  .legend-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+  .legend-left{display:flex;align-items:center;gap:9px;}
+  .dot{width:10px;height:10px;border-radius:3px;}
+  .legend-val{font-weight:700;color:var(--slate-900);}
+
+  /* Forms */
+  .form-panel{padding:26px;max-width:640px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-grid .full{grid-column:1/-1;}
+  .helper-text{font-size:12px;color:var(--slate-400);margin-top:5px;}
+  .stock-preview{
+    margin-top:6px;padding:12px 14px;border-radius:10px;background:var(--blue-50);
+    font-size:12.5px;color:var(--navy-800);display:none;
+  }
+  .alert-box{padding:11px 14px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;display:none;align-items:center;gap:8px;}
+  .alert-box.error{background:var(--red-100);color:var(--red-600);}
+  .alert-box.success{background:var(--green-100);color:var(--green-600);}
+  .alert-box.warn{background:var(--orange-100);color:var(--orange-600);}
+  .profile-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:12px;box-shadow:0 18px 40px -12px rgba(0,0,0,.25);border:1px solid var(--slate-100);min-width:190px;overflow:hidden;z-index:70;}
+  .profile-dropdown.open{display:block;}
+  .profile-dropdown-item{padding:11px 16px;font-size:13px;font-weight:600;color:var(--slate-800);cursor:pointer;}
+  .profile-dropdown-item:hover{background:var(--slate-100);}
+  .profile-dropdown-item:not(:last-child){border-bottom:1px solid var(--slate-100);}
+  .form-actions{display:flex;gap:10px;margin-top:6px;}
+  .btn-secondary{background:var(--slate-100);color:var(--slate-600);border:1.5px solid var(--slate-200);border-radius:9px;padding:11px 18px;font-weight:700;font-size:13.5px;}
+  .btn-submit{background:linear-gradient(135deg,var(--blue-600),var(--navy-800));color:#fff;border:none;border-radius:9px;padding:11px 22px;font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(37,99,235,.55);}
+
+  .action-btn{border:none;border-radius:8px;padding:7px 13px;font-size:12px;font-weight:700;color:#fff;margin-right:6px;margin-bottom:6px;}
+  .action-btn.issue{background:var(--blue-600);}
+  .action-btn.reject{background:var(--red-600);}
+  .action-btn.warn{background:var(--orange-600);}
+  .action-btn.neutral{background:var(--purple-600);}
+  .action-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .filter-bar{display:flex;gap:10px;padding:16px 22px;border-bottom:1px solid var(--slate-100);flex-wrap:wrap;}
+  .filter-bar select, .filter-bar input{padding:8px 12px;border-radius:8px;border:1.5px solid var(--slate-200);font-size:12.5px;background:var(--slate-100);}
+
+  .empty-row td{text-align:center;color:var(--slate-400);padding:30px;font-size:13px;}
+
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+  /* Page Access Permissions */
+  .perm-section{margin-top:8px;padding-top:18px;border-top:1px solid var(--slate-100);}
+  .perm-section h4{font-size:13.5px;margin-bottom:4px;}
+  .perm-section .perm-sub{font-size:12px;color:var(--slate-600);margin-bottom:12px;}
+  .perm-toolbar{display:flex;gap:8px;margin-bottom:10px;}
+  .perm-toolbar button{background:var(--slate-100);color:var(--slate-600);border:1.5px solid var(--slate-200);border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;}
+  .perm-grid{border:1.5px solid var(--slate-200);border-radius:10px;overflow:hidden;}
+  .perm-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:13px;border-bottom:1px solid var(--slate-100);background:#fff;}
+  .perm-row:last-child{border-bottom:none;}
+  .perm-row.checked{background:var(--blue-50);}
+  .perm-left{display:flex;align-items:center;gap:10px;}
+  .perm-left input[type="checkbox"]{width:17px;height:17px;accent-color:var(--blue-600);cursor:pointer;}
+  .perm-status{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .perm-status.allowed{background:var(--green-100);color:var(--green-600);}
+  .perm-status.notallowed{background:var(--red-100);color:var(--red-600);}
+  .perm-admin-note{display:none;font-size:12.5px;color:var(--navy-800);background:var(--blue-50);padding:10px 14px;border-radius:9px;margin-bottom:12px;font-weight:600;}
+  .access-chip{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--slate-100);color:var(--slate-600);margin:1px 3px 1px 0;}
+  .access-chip.full{background:var(--purple-100);color:var(--purple-600);}
+  .access-chip.none{background:var(--red-100);color:var(--red-600);}
+  .settings-card{padding:22px;}
+  .settings-card h4{font-size:14.5px;margin-bottom:14px;}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--slate-100);font-size:13px;}
+  .toggle-row:last-child{border-bottom:none;}
+  .switch{width:38px;height:22px;border-radius:20px;background:var(--slate-200);position:relative;transition:.2s;}
+  .switch.on{background:var(--blue-600);}
+  .switch::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .switch.on::after{left:19px;}
+  .dept-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:13px;border-bottom:1px solid var(--slate-100);background:#fff;}
+  .dept-row:last-child{border-bottom:none;}
+  .dept-name{font-weight:700;color:var(--slate-900);}
+  .dept-actions{display:flex;gap:6px;}
+  .chart-wrap{padding:20px 22px;}
+  .chart-wrap{position:relative;}
+  .chart-wrap canvas{display:block;}
+
+  /* Quality status */
+  .qty-badges{display:flex;gap:6px;flex-wrap:wrap;}
+  .qty-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .qty-badge.approved{background:var(--green-100);color:var(--green-600);}
+  .qty-badge.rejected{background:var(--red-100);color:var(--red-600);}
+  .qty-badge.pending{background:var(--orange-100);color:var(--orange-600);}
+
+  /* Quality modal */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:60;background:rgba(11,28,61,.55);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px);}
+  .modal-overlay.open{display:flex;}
+  .modal-card{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:440px;box-shadow:0 30px 70px -20px rgba(0,0,0,.4);overflow:hidden;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--slate-100);}
+  .modal-head h3{font-size:15.5px;}
+  .modal-close{background:none;border:none;font-size:22px;line-height:1;color:var(--slate-400);padding:0 4px;}
+  .modal-body{padding:20px 26px 4px;}
+  .quality-modal-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;background:var(--slate-100);border-radius:10px;padding:12px 14px;}
+  .quality-modal-meta div{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--slate-600);}
+  .quality-modal-meta strong{font-size:13.5px;color:var(--slate-900);}
+  .quality-pending-line{margin-top:4px;margin-bottom:14px;padding:10px 14px;border-radius:9px;background:var(--orange-100);color:var(--orange-600);font-weight:700;font-size:13px;}
+
+  @media(max-width:1100px){
+    .app-shell{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .kpi-grid{grid-template-columns:1fr;}
+    .dashboard-grid{grid-template-columns:1fr;}
+    .quick-grid{grid-template-columns:1fr 1fr;}
+    .login-card{grid-template-columns:1fr;}
+    .login-visual{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN SCREEN ================= -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-visual">
+      <div class="stack">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#153477" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg>
+        </div>
+        <div>
+          <h1>Greige Bag Request<br>Management System</h1>
+          <p class="tag">Better Stock Control &nbsp;•&nbsp; Smooth Operations &nbsp;•&nbsp; Higher Efficiency</p>
+        </div>
+      </div>
+      <div class="bag-stack">
+        <div class="bag-row"><div class="bag"></div><div class="bag"></div><div class="bag"></div><div class="bag"></div></div>
+        <div class="bag-row"><div class="bag"></div><div class="bag"></div><div class="bag"></div></div>
+        <div class="bag-row"><div class="bag"></div><div class="bag"></div></div>
+      </div>
+      <div class="stat-strip">
+        <div><span class="num" id="login-stat-bags">0</span><span class="lbl">Bags Available</span></div>
+        <div><span class="num" id="login-stat-pos">0</span><span class="lbl">Active POs</span></div>
+      </div>
+    </div>
+    <div class="login-form-wrap">
+      <h2>Sign in to your warehouse</h2>
+      <p class="sub">Enter your credentials to access the dashboard.</p>
+      <div class="login-error" id="login-error">Invalid username or password.</div>
+      <form id="login-form">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="login-user" placeholder="e.g. noyon.rm" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+      <p class="login-hint">Please sign in with your assigned member account.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#153477" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg></div>
+      <div class="brand-text">Greige Bag Request<br>Management System</div>
+    </div>
+    <nav id="nav-list">
+      <div class="nav-item" data-page="dashboard" id="nav-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Dashboard</div>
+      <div class="nav-item" data-page="postock" id="nav-postock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg> PO Stock Management</div>
+      <div class="nav-item" data-page="deptrequest" id="nav-deptrequest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M9 15h6M9 11h3"/></svg> Department Request</div>
+      <div class="nav-item" data-page="issuemgmt" id="nav-issuemgmt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="5.5" cy="19" r="1.7"/><circle cx="18" cy="19" r="1.7"/></svg> Issue Management</div>
+      <div class="nav-item" data-page="reqhistory" id="nav-reqhistory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Request History</div>
+      <div class="nav-item" data-page="issuehistory" id="nav-issuehistory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg> Issue History</div>
+      <div class="nav-item" data-page="reports" id="nav-reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M9 17h6M9 13h6M9 9h1"/></svg> Reports</div>
+      <div class="nav-item" data-page="members" id="nav-members"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Member Management</div>
+      <div class="nav-item" data-page="settings" id="nav-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> Settings</div>
+    </nav>
+    <div class="nav-spacer"></div>
+    <div class="nav-item" id="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Logout</div>
+    <div class="nav-footer">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#153477" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg></div>
+      <div>Greige Bag Request System<br>v1.0.0</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-col">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#153477" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg></div>
+        <div>
+          <h1>Greige Bag Request Management System</h1>
+          <div class="sub">Better Stock Control · Smooth Operations · Higher Efficiency</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="datetime-chip" id="datetime-chip">📅 -- | --:--</div>
+        <div class="profile-chip-wrap" style="position:relative;">
+          <div class="profile-chip" id="profile-chip-btn" style="cursor:pointer;">
+            <div class="avatar" id="avatar-initial">N</div>
+            <div>
+              <div class="pname" id="profile-name">Noyon Rm</div>
+              <div class="prole" id="profile-role">Warehouse</div>
+            </div>
+          </div>
+          <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-dropdown-item" id="menu-my-profile">👤 My Profile</div>
+            <div class="profile-dropdown-item" id="menu-change-password">🔑 Change Password</div>
+            <div class="profile-dropdown-item" id="menu-logout">🚪 Logout</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg></div>
+          <div><h2>Dashboard</h2><p>Overview of your warehouse operations</p></div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card blue">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M4 8h16l-1.5 12a2 2 0 01-2 1.8H7.5A2 2 0 015.5 20L4 8z"/></svg></div>
+              <div><div class="kpi-label">Total Available Bags</div><div class="kpi-value" id="kpi-bags">0</div></div>
+            </div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M4 10h16"/><circle cx="16" cy="16" r="3.4"/><path d="M16 15v1.4l1 .8"/></svg></div>
+              <div><div class="kpi-label">Pending Requests</div><div class="kpi-value" id="kpi-pending">0</div></div>
+            </div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
+              <div><div class="kpi-label">Issued Requests</div><div class="kpi-value" id="kpi-issued">0</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg> PO Stock Summary</h3>
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                <input type="text" id="dash-po-search" placeholder="Search PO or Item Name...">
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+            <table>
+              <thead><tr><th>PO Number</th><th>Item Name</th><th>Total Bags</th><th>Available Bags</th><th>Received Date</th></tr></thead>
+              <tbody id="dash-po-table"></tbody>
+            </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg> Recent Requests</h3>
+              <span class="link-btn" data-page="reqhistory">View All</span>
+            </div>
+            <div style="overflow-x:auto;">
+            <table>
+              <thead><tr><th>Request No</th><th>Department</th><th>PO Number</th><th>Qty (Bags)</th><th>Status</th></tr></thead>
+              <tbody id="dash-recent-table"></tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-grid">
+          <div class="panel qa-card">
+            <div class="qa-top"><div class="qa-icon b1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg></div><h4>Department Request</h4></div>
+            <p>Submit a new greige bag request from your department.</p>
+            <button class="qa-btn b1" data-page="deptrequest"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> New Request</button>
+          </div>
+          <div class="panel qa-card">
+            <div class="qa-top"><div class="qa-icon b2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/></svg></div><h4>Issue Bags</h4></div>
+            <p>Warehouse can issue bags to departments and update stock.</p>
+            <button class="qa-btn b2" data-page="issuemgmt"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Issue Bags</button>
+          </div>
+          <div class="panel qa-card">
+            <div class="qa-top"><div class="qa-icon b3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div><h4>PO Stock Management</h4></div>
+            <p>View and manage PO-wise stock information.</p>
+            <button class="qa-btn b3" data-page="postock"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg> View Stock</button>
+          </div>
+          <div class="panel donut-wrap">
+            <h3 style="align-self:flex-start;font-size:15.5px;display:flex;gap:9px;align-items:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue-600)" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg> Stock Overview</h3>
+            <canvas id="donut-canvas" width="200" height="200"></canvas>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+
+        <div class="dept-issue-row" style="display:flex;gap:20px;margin-top:20px;align-items:stretch;flex-wrap:wrap;">
+          <div class="panel chart-wrap" style="flex:2 1 480px;margin:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px;">
+              <h3 style="font-size:15.5px;display:flex;gap:9px;align-items:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue-600)" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg> Department Issue Overview</h3>
+              <button type="button" class="btn-secondary" id="dept-chart-export-btn" style="padding:8px 14px;font-size:12px;">⬇ Export Chart PDF</button>
+            </div>
+            <p style="font-size:12px;color:var(--slate-500);margin:0 0 14px;">Issued bag quantity by department</p>
+            <div class="filter-bar" style="padding:0 0 14px;border-bottom:none;">
+              <select id="dept-filter-type">
+                <option value="all">All Time</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <div class="field" id="dept-filter-week-field" style="display:none;margin:0;">
+                <input type="week" id="dept-filter-week">
+              </div>
+              <div class="field" id="dept-filter-month-field" style="display:none;margin:0;">
+                <input type="month" id="dept-filter-month">
+              </div>
+            </div>
+            <canvas id="dept-bar-chart"></canvas>
+          </div>
+          <div class="panel" style="flex:1 1 220px;margin:0;display:flex;flex-direction:column;justify-content:center;">
+            <h3 style="font-size:13.5px;color:var(--slate-600);padding:20px 20px 0;margin-bottom:10px;">Quality Approved Bags</h3>
+            <div class="kpi-card green" style="margin:0 20px 20px;">
+              <div class="kpi-row">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
+                <div><div class="kpi-label">🟢 Approved Bags</div><div class="kpi-value" id="dash-approved-value">0</div><div class="kpi-label" id="dash-approved-pct">0% of total PO bags</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-head" style="margin-top:26px;">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
+          <div><h2>Overall PO Quality Summary</h2><p>Combined quality classification across all purchase orders</p></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card green">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
+              <div><div class="kpi-label">🟢 Approved Bags</div><div class="kpi-value" id="kpi-quality-approved">0</div><div class="kpi-label" id="kpi-quality-approved-pct">0%</div></div>
+            </div>
+          </div>
+          <div class="kpi-card" style="background:linear-gradient(135deg,#f0655f,#c93a34);">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
+              <div><div class="kpi-label">🔴 Rejected Bags</div><div class="kpi-value" id="kpi-quality-rejected">0</div><div class="kpi-label" id="kpi-quality-rejected-pct">0%</div></div>
+            </div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+              <div><div class="kpi-label">🟡 Quality Pending Bags</div><div class="kpi-value" id="kpi-quality-pending">0</div><div class="kpi-label" id="kpi-quality-pending-pct">0%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel chart-wrap">
+          <h3 style="font-size:15.5px;display:flex;gap:9px;align-items:center;margin-bottom:16px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue-600)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Overall PO Quality Status</h3>
+          <canvas id="quality-bar-chart"></canvas>
+        </div>
+      </section>
+
+      <!-- PO STOCK MANAGEMENT PAGE -->
+      <section class="page" id="page-postock">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div>
+          <div><h2>PO Stock Management</h2><p>View and manage purchase order stock information</p></div>
+        </div>
+
+        <div class="alert-box warn" id="po-frozen-banner" style="display:none;">🔒 Purchase Order Editing Frozen — you can view stock but cannot add, update, or add re-used bags to a PO. Contact your Administrator for access.</div>
+
+        <div class="panel form-panel" style="margin-bottom:22px;max-width:none;" id="po-form-panel">
+          <h3 style="font-size:14.5px;margin-bottom:14px;">Add / Update Purchase Order</h3>
+          <div class="alert-box error" id="po-alert"></div>
+          <form id="po-form">
+            <div class="form-grid">
+              <div class="field"><label>PO Number</label><input type="text" id="po-number" placeholder="PO0005" required></div>
+              <div class="field"><label>Item Name</label><select id="po-itemname" required></select></div>
+              <div class="field"><label>Total Bags</label><input type="number" id="po-bags" min="1" required></div>
+              <div class="field"><label>Received Date</label><input type="date" id="po-receiveddate" required></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-submit">Save Purchase Order</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg> All Purchase Orders</h3>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              <input type="text" id="postock-search" placeholder="Search PO or Item Name...">
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>PO Number</th><th>Item Name</th><th>Total Bags</th><th>Available Bags</th><th>Received Date</th><th>Quality Status</th><th>Action</th></tr></thead>
+            <tbody id="postock-table"></tbody>
+          </table>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-head">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Re-used Bags</h3>
+            <button type="button" class="qa-btn b2" id="reuse-add-btn" style="padding:9px 16px;font-size:12.5px;">+ Add Re-used Bags</button>
+          </div>
+          <p style="padding:0 22px 14px;font-size:12.5px;color:var(--slate-600);">Bags returned to stock after re-use. These do not need Quality Approval and are immediately available for issue.</p>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Date</th><th>Item Name</th><th>Re-used Bags</th><th>Added By</th><th>Remarks</th></tr></thead>
+            <tbody id="reuse-history-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUALITY STATUS MODAL -->
+      <div class="modal-overlay" id="quality-modal-overlay">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>Update Quality Status</h3>
+            <button type="button" class="modal-close" id="quality-modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="alert-box error" id="quality-alert"></div>
+            <div class="quality-modal-meta">
+              <div><span>PO Number</span><strong id="qm-po">—</strong></div>
+              <div><span>Item</span><strong id="qm-item">—</strong></div>
+              <div><span>Total Bags</span><strong id="qm-total">0</strong></div>
+            </div>
+            <input type="hidden" id="qm-po-hidden" value="">
+            <div class="form-grid">
+              <div class="field"><label>🟢 Approved Bags</label><input type="number" id="qm-approved" min="0" step="1"></div>
+              <div class="field"><label>🔴 Rejected Bags</label><input type="number" id="qm-rejected" min="0" step="1"></div>
+              <div class="field full"><label>Quality Date &amp; Time</label><input type="datetime-local" id="qm-datetime"></div>
+            </div>
+            <div class="quality-pending-line">🟡 Pending Bags: <strong id="qm-pending">0</strong></div>
+            <div class="helper-text" id="qm-last-updated" style="margin-top:8px;"></div>
+          </div>
+          <div class="form-actions" style="padding:0 26px 22px;">
+            <button type="button" class="btn-submit" id="qm-save-btn">Save Quality Status</button>
+            <button type="button" class="btn-secondary" id="qm-cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RE-USED BAGS MODAL -->
+      <div class="modal-overlay" id="reuse-modal-overlay">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>Add Re-used Bags</h3>
+            <button type="button" class="modal-close" id="reuse-modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="alert-box error" id="reuse-alert"></div>
+            <div class="form-grid">
+              <div class="field"><label>Item Name</label><select id="reuse-item-select" required></select></div>
+              <div class="field"><label>Re-used Bags Quantity</label><input type="number" id="reuse-qty" min="1" step="1" required></div>
+              <div class="field"><label>Date</label><input type="date" id="reuse-date" required></div>
+              <div class="field full"><label>Remarks</label><input type="text" id="reuse-remarks" placeholder="e.g. Reused bags returned to stock"></div>
+            </div>
+          </div>
+          <div class="form-actions" style="padding:0 26px 22px;">
+            <button type="button" class="btn-submit" id="reuse-save-btn">Save</button>
+            <button type="button" class="btn-secondary" id="reuse-cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPARTMENT REQUEST PAGE -->
+      <section class="page" id="page-deptrequest">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg></div>
+          <div><h2>Department Request</h2><p>Submit a new greige bag request from your department</p></div>
+        </div>
+        <div class="panel form-panel">
+          <div class="alert-box error" id="req-error">Insufficient Stock Available.</div>
+          <div class="alert-box success" id="req-success">Request submitted successfully.</div>
+          <form id="request-form">
+            <div class="form-grid">
+              <div class="field full">
+                <label>Department</label>
+                <select id="req-dept" required>
+                  <option value="">Select department</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label>Requested Quantity (Bags)</label>
+                <input type="number" id="req-qty" min="1" placeholder="e.g. 10" required>
+              </div>
+              <div class="field full">
+                <label>Remarks (optional)</label>
+                <input type="text" id="req-remarks" placeholder="Reason or notes for this request">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-submit">Submit Request</button>
+              <button type="reset" class="btn-secondary">Clear</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ISSUE MANAGEMENT PAGE -->
+      <section class="page" id="page-issuemgmt">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/></svg></div>
+          <div><h2>Issue Management</h2><p>Issue or reject pending department requests</p></div>
+        </div>
+        <div class="alert-box error" id="issue-error" style="max-width:640px;">Insufficient Stock Available.</div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> Requests Awaiting Action</h3>
+          </div>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Request No</th><th>Department</th><th>Requested Qty</th><th>Issue From PO</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="issue-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- REQUEST HISTORY PAGE -->
+      <section class="page" id="page-reqhistory">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div><h2>Request History</h2><p>Complete log of all department requests</p></div>
+        </div>
+        <div class="panel">
+          <div class="filter-bar">
+            <select id="hist-status-filter">
+              <option value="">All Statuses</option>
+              <option>Pending</option><option>Issued</option><option>Rejected</option>
+            </select>
+            <select id="hist-dept-filter">
+              <option value="">All Departments</option>
+            </select>
+            <input type="text" id="hist-search" placeholder="Search request no. or PO...">
+          </div>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Request No</th><th>Requested By</th><th>Department</th><th>PO Number</th><th>Qty (Bags)</th><th>Remarks</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="reqhistory-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ISSUE HISTORY PAGE -->
+      <section class="page" id="page-issuehistory">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+          <div><h2>Issue History</h2><p>Log of all bags issued to departments</p></div>
+        </div>
+        <div class="panel">
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Request No</th><th>Department</th><th>PO Number</th><th>Item Name</th><th>Qty Issued (Bags)</th><th>Source</th><th>Issued By</th><th>Issued On</th></tr></thead>
+            <tbody id="issuehistory-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MEMBER MANAGEMENT PAGE (Admin only) -->
+      <section class="page" id="page-members">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div><h2>Member Management</h2><p>Add, edit, and manage system members (Admin only)</p></div>
+        </div>
+
+        <div class="panel form-panel" style="margin-bottom:22px;max-width:none;">
+          <h3 id="member-form-title" style="font-size:14.5px;margin-bottom:14px;">Add New Member</h3>
+          <div class="alert-box error" id="member-alert"></div>
+          <div class="alert-box success" id="member-success"></div>
+          <form id="member-form">
+            <input type="hidden" id="member-edit-id" value="">
+            <div class="form-grid">
+              <div class="field"><label>Full Name</label><input type="text" id="member-name" placeholder="e.g. Noyon Rahman" required></div>
+              <div class="field"><label>Username</label><input type="text" id="member-username" placeholder="e.g. noyon.rm" required></div>
+              <div class="field"><label>Password</label><input type="password" id="member-password" placeholder="Set a password" autocomplete="new-password"></div>
+              <div class="field">
+                <label>Role</label>
+                <select id="member-role">
+                  <option>Warehouse</option>
+                  <option>Department</option>
+                  <option>Admin</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="member-status">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="helper-text" id="member-password-hint">Password is required for new members.</div>
+
+            <div class="perm-section">
+              <h4>Page Access Permissions</h4>
+              <p class="perm-sub">Choose which pages this user can open. PO Stock Management is Admin-only by default — enable it here to grant access to this user. PO Quality Management additionally requires PO Stock Management to be enabled.</p>
+              <div class="perm-admin-note" id="member-admin-note">Admin users automatically have full access to every page. Page permissions below are ignored for Admin accounts.</div>
+              <div class="perm-toolbar" id="member-perm-toolbar">
+                <button type="button" id="perm-select-all">Select All</button>
+                <button type="button" id="perm-clear-all">Clear All</button>
+              </div>
+              <div class="perm-grid" id="member-perm-grid">
+                <label class="perm-row" data-perm-row="poStock">
+                  <span class="perm-left"><input type="checkbox" id="perm-poStock" data-perm="poStock"> PO Stock Management (View)</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="poEdit" style="padding-left:28px;">
+                  <span class="perm-left"><input type="checkbox" id="perm-poEdit" data-perm="poEdit"> ↳ Add / Update Purchase Order (incl. Re-used Bags)</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="poQuality" style="padding-left:28px;">
+                  <span class="perm-left"><input type="checkbox" id="perm-poQuality" data-perm="poQuality"> ↳ PO Quality Management</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="departmentRequest">
+                  <span class="perm-left"><input type="checkbox" id="perm-departmentRequest" data-perm="departmentRequest"> Department Request</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="issueManagement">
+                  <span class="perm-left"><input type="checkbox" id="perm-issueManagement" data-perm="issueManagement"> Issue Management</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="issueHistory">
+                  <span class="perm-left"><input type="checkbox" id="perm-issueHistory" data-perm="issueHistory"> Issue History</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="reports">
+                  <span class="perm-left"><input type="checkbox" id="perm-reports" data-perm="reports"> Reports</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+                <label class="perm-row" data-perm-row="settings">
+                  <span class="perm-left"><input type="checkbox" id="perm-settings" data-perm="settings"> Settings</span>
+                  <span class="perm-status notallowed">Not Allowed</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-submit" id="member-submit-btn">Add Member</button>
+              <button type="button" class="btn-secondary" id="member-cancel-edit" style="display:none;">Cancel Edit</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/></svg> All Members</h3>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              <input type="text" id="member-search" placeholder="Search name or username...">
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Full Name</th><th>Username</th><th>Role</th><th>Status</th><th>Page Access</th><th>Action</th></tr></thead>
+            <tbody id="member-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS PAGE -->
+      <section class="page" id="page-settings">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg></div>
+          <div><h2>Settings</h2><p>Manage system preferences and data</p></div>
+        </div>
+        <div class="settings-grid">
+          <div class="panel settings-card">
+            <h4>Notifications</h4>
+            <div class="toggle-row"><span>Email alerts for low stock</span><div class="switch on" data-toggle></div></div>
+            <div class="toggle-row"><span>Notify on new department request</span><div class="switch on" data-toggle></div></div>
+            <div class="toggle-row"><span>Daily summary report</span><div class="switch" data-toggle></div></div>
+          </div>
+          <div class="panel settings-card">
+            <h4>System</h4>
+            <div class="toggle-row"><span>Low stock threshold warning</span><span class="mono" style="font-weight:700;">15 bags</span></div>
+            <div class="toggle-row"><span>Data storage</span><span style="font-weight:700;color:var(--green-600);">LocalStorage — Active</span></div>
+            <div class="toggle-row"><span>Clear all operational data</span>
+              <button class="action-btn reject" id="reset-data-btn" style="margin:0;">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel form-panel" style="margin-top:20px;max-width:none;" id="dept-mgmt-panel">
+          <h3 style="font-size:14.5px;margin-bottom:14px;">Department Management (Admin only)</h3>
+          <div class="alert-box error" id="dept-alert"></div>
+          <form id="dept-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;">
+            <input type="hidden" id="dept-edit-name" value="">
+            <div class="field" style="margin-bottom:0;flex:1;min-width:220px;">
+              <label>Department Name</label>
+              <input type="text" id="dept-name-input" placeholder="e.g. Cutting" required>
+            </div>
+            <div class="form-actions" style="margin-top:0;">
+              <button type="submit" class="btn-submit" id="dept-submit-btn">Add Department</button>
+              <button type="button" class="btn-secondary" id="dept-cancel-edit" style="display:none;">Cancel</button>
+            </div>
+          </form>
+          <div class="perm-grid" id="dept-list"></div>
+        </div>
+      </section>
+
+      <!-- REPORTS PAGE -->
+      <section class="page" id="page-reports">
+        <div class="page-head">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M9 17h6M9 13h6M9 9h1"/></svg></div>
+          <div><h2>Reports</h2><p>Generate professional Weekly and Monthly warehouse PDF reports</p></div>
+        </div>
+        <div class="panel form-panel" style="max-width:none;">
+          <div class="alert-box error" id="report-alert"></div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Report Type</label>
+              <select id="report-type">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div class="field" id="report-week-field">
+              <label>Select Week</label>
+              <input type="week" id="report-week">
+            </div>
+            <div class="field" id="report-month-field" style="display:none;">
+              <label>Select Month</label>
+              <input type="month" id="report-month">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-submit" id="report-generate-btn">Generate PDF Report</button>
+          </div>
+          <p style="font-size:12px;color:var(--slate-500);margin-top:6px;">The report uses your system's actual stock, request, issue, quality and re-used-bag data for the selected period.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- MY PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal-overlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>My Profile</h3>
+      <button type="button" class="modal-close" id="profile-modal-close">&times;</button>
+    </div>
+    <div class="modal-body" style="padding-bottom:22px;">
+      <div class="quality-modal-meta" style="grid-template-columns:1fr;gap:12px;">
+        <div><span>Full Name</span><strong id="pm-name">—</strong></div>
+        <div><span>Username</span><strong id="pm-username">—</strong></div>
+        <div><span>Role</span><strong id="pm-role">—</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="password-modal-overlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Change Password</h3>
+      <button type="button" class="modal-close" id="password-modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-box error" id="password-alert"></div>
+      <div class="alert-box success" id="password-success"></div>
+      <div class="field"><label>Current Password</label><input type="password" id="cp-current" autocomplete="current-password"></div>
+      <div class="field"><label>New Password</label><input type="password" id="cp-new" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm New Password</label><input type="password" id="cp-confirm" autocomplete="new-password"></div>
+    </div>
+    <div class="form-actions" style="padding:0 26px 22px;">
+      <button type="button" class="btn-submit" id="cp-save-btn">Change Password</button>
+      <button type="button" class="btn-secondary" id="cp-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ACCOUNT LOCKED MODAL (outside #app — must be visible from the login
+     screen, before #app becomes display:block) -->
+<div class="modal-overlay" id="locked-modal-overlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🔒 Account Locked</h3>
+    </div>
+    <div class="modal-body" style="padding-bottom:22px;">
+      <p style="font-size:13.5px;color:var(--slate-700);margin-bottom:14px;" id="locked-modal-message">Your account has been locked after 5 unsuccessful login attempts.</p>
+      <p style="font-size:13px;color:var(--slate-600);margin-bottom:4px;">Please contact the Administrator:</p>
+      <div style="background:var(--slate-100);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.7;">
+        <strong>Mr. Thushara Gunawardana</strong><br>
+        Warehouse Executive<br>
+        077 756 4623
+      </div>
+    </div>
+    <div class="form-actions" style="padding:0 26px 22px;">
+      <button type="button" class="btn-secondary" id="locked-modal-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============ SUPABASE CLOUD DATABASE ============ */
+const SUPABASE_URL = "https://xqcoydithxcqkwvlhkkg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_7Zq7OdQUe6X3CCVr7BDWAA_e51tjx6G";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const CLOUD_TABLE = 'app_data';
+const CLOUD_ROW_ID = 'greige-main';
+let cloudReady = false;
+let cloudSaveChain = Promise.resolve();
+let cloudLastError = null;
+
+async function cloudLoadDB(){
+  const { data, error } = await supabaseClient
+    .from(CLOUD_TABLE)
+    .select('id,data,updated_at')
+    .eq('id', CLOUD_ROW_ID)
+    .maybeSingle();
+  if(error) throw error;
+  return data && data.data ? data.data : null;
+}
+
+function cloudSaveDB(){
+  if(!DB) return Promise.resolve();
+  const snapshot = JSON.parse(JSON.stringify(DB));
+  cloudSaveChain = cloudSaveChain.then(async ()=>{
+    const { error } = await supabaseClient
+      .from(CLOUD_TABLE)
+      .upsert({id:CLOUD_ROW_ID, data:snapshot, updated_at:new Date().toISOString()}, {onConflict:'id'});
+    if(error){
+      cloudLastError = error;
+      console.error('Supabase save error:', error);
+      showCloudStatus('Database save failed. Your changes were not confirmed by Supabase.', true);
+      throw error;
+    }
+    cloudLastError = null;
+    showCloudStatus('Saved to cloud');
+  }).catch(()=>{});
+  return cloudSaveChain;
+}
+
+function showCloudStatus(message, isError=false){
+  let el=document.getElementById('cloud-status');
+  if(!el){
+    el=document.createElement('div');
+    el.id='cloud-status';
+    el.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99999;padding:10px 14px;border-radius:10px;font:600 12px Manrope,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.15);transition:opacity .3s;';
+    document.body.appendChild(el);
+  }
+  el.textContent=(isError?'⚠️ ':'☁️ ')+message;
+  el.style.background=isError?'#fff1f0':'#eefaf4';
+  el.style.color=isError?'#b42318':'#067647';
+  el.style.opacity='1';
+  clearTimeout(el._timer);
+  el._timer=setTimeout(()=>el.style.opacity='0',2600);
+}
+
+async function initializeCloudDatabase(){
+  try{
+    const cloudData = await cloudLoadDB();
+    if(cloudData && typeof cloudData==='object'){
+      DB = cloudData;
+      normalizeDB();
+      cloudReady = true;
+      showCloudStatus('Connected to Supabase');
+      return;
+    }
+    // First installation: create the current application's default dataset in Supabase.
+    DB = emptyData();
+    ensureDefaultAdmin();
+    await cloudSaveDB();
+    cloudReady = true;
+    showCloudStatus('Supabase connected — new database created');
+  }catch(error){
+    console.error('Supabase connection failed:', error);
+    cloudReady = false;
+    // Safe fallback: keep the existing local data so the app is not destroyed if the network is down.
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ try{ DB=JSON.parse(raw); normalizeDB(); }catch(e){ DB=emptyData(); ensureDefaultAdmin(); } }
+    else { DB=emptyData(); ensureDefaultAdmin(); }
+    showCloudStatus('Supabase connection failed — using local data temporarily', true);
+  }
+}
+
+/* ============ DATA MODEL ============ */
+// NOTE: storage key was bumped from v1 to v2 so the old demo-seeded database
+// (which auto-created sample POs/requests/issues) is never read or recreated.
+const OLD_STORAGE_KEY = 'greige_bag_system_v1';
+const STORAGE_KEY = 'greige_bag_system_v3';
+const DEFAULT_ITEM_NAME = 'W26(G5+G5)L55';
+const DEFAULT_DEPARTMENTS = ['Knitting','Finishing','DBI'];
+function defaultDepartments(){
+  return DEFAULT_DEPARTMENTS.map(name => ({name, active:true}));
+}
+
+/* ---- Page Access Permission system ---- */
+// Sidebar/page name -> permission key. Pages not listed here (dashboard,
+// reqhistory) are available to every active logged-in user by default.
+const PAGE_PERMISSION_MAP = {
+  postock: 'poStock',
+  deptrequest: 'departmentRequest',
+  issuemgmt: 'issueManagement',
+  issuehistory: 'issueHistory',
+  reports: 'reports',
+  settings: 'settings',
+};
+const PERMISSION_KEYS = ['poStock','poEdit','poQuality','departmentRequest','issueManagement','issueHistory','reports','settings'];
+const PERMISSION_LABELS = {
+  poStock: 'PO Stock Management',
+  poEdit: 'Add / Update Purchase Order',
+  poQuality: 'PO Quality Management',
+  departmentRequest: 'Department Request',
+  issueManagement: 'Issue Management',
+  issueHistory: 'Issue History',
+  reports: 'Reports',
+  settings: 'Settings',
+};
+function defaultPermissions(value){
+  const perms = {};
+  PERMISSION_KEYS.forEach(key => perms[key] = !!value);
+  return perms;
+}
+
+// Documented default admin account, created ONLY the very first time the
+// system runs (i.e. when there are no members yet). The admin can and
+// should change this password afterwards from Member Management.
+//   Username: admin
+//   Password: admin123
+function defaultAdminAccount(){
+  return {id:'M000001', name:'Administrator', username:'admin', password:'admin123', role:'Admin', active:true, permissions: defaultPermissions(true), failedAttempts:0, locked:false};
+}
+
+function emptyData(){
+  return {
+    pos: [],
+    requests: [],
+    issues: [],
+    reuses: [],
+    qualityHistory: [],
+    nextReqNum: 1,
+    nextReuseNum: 1,
+    nextQualityNum: 1,
+    itemNames: [DEFAULT_ITEM_NAME],
+    members: [],
+    departments: defaultDepartments(),
+  };
+}
+
+function ensureDefaultAdmin(){
+  if(!DB.members || DB.members.length === 0){
+    DB.members = [defaultAdminAccount()];
+  }
+}
+
+let DB = null;
+let currentUser = null;
+
+function normalizeDB(){
+  if(!DB || typeof DB!=='object') DB=emptyData();
+  if(!Array.isArray(DB.pos)) DB.pos=[];
+  if(!Array.isArray(DB.requests)) DB.requests=[];
+  if(!Array.isArray(DB.issues)) DB.issues=[];
+  if(!Array.isArray(DB.reuses)) DB.reuses=[];
+  if(!Array.isArray(DB.qualityHistory)) DB.qualityHistory=[];
+  DB.reuses.forEach(r=>{ delete r.po; });
+  if(!Array.isArray(DB.itemNames)||DB.itemNames.length===0) DB.itemNames=[DEFAULT_ITEM_NAME];
+  if(!Array.isArray(DB.members)) DB.members=[];
+  if(!Array.isArray(DB.departments)||DB.departments.length===0) DB.departments=defaultDepartments();
+  DB.departments.forEach(d=>{if(typeof d.active!=='boolean') d.active=true;});
+  DB.pos.forEach(p=>{
+    delete p.code; delete p.totalWeight; delete p.availWeight; delete p.location;
+    if(!p.receivedDate) p.receivedDate=new Date().toISOString().slice(0,10);
+    if(typeof p.approvedBags!=='number') p.approvedBags=0;
+    if(typeof p.rejectedBags!=='number') p.rejectedBags=0;
+    if(p.approvedBags===0&&p.rejectedBags===0&&!p.qualityUpdatedAt) p.approvedBags=p.totalBags;
+  });
+  DB.members.forEach(m=>{
+    if(!m.permissions||typeof m.permissions!=='object') m.permissions=defaultPermissions(m.role==='Admin');
+    else PERMISSION_KEYS.forEach(key=>{if(typeof m.permissions[key]!=='boolean') m.permissions[key]=false;});
+    if(typeof m.failedAttempts!=='number') m.failedAttempts=0;
+    if(typeof m.locked!=='boolean') m.locked=false;
+  });
+  if(!DB.nextReqNum) DB.nextReqNum=1;
+  if(!DB.nextReuseNum) DB.nextReuseNum=1;
+  if(!DB.nextQualityNum) DB.nextQualityNum=1;
+  ensureDefaultAdmin();
+}
+
+async function loadDB(){
+  await initializeCloudDatabase();
+  // Keep a local cache only as a temporary offline fallback; Supabase is the source of truth.
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+}
+
+function saveDB(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+  if(cloudReady) return cloudSaveDB();
+  return Promise.resolve();
+}
+
+function poByNumber(po){ return DB.pos.find(p=>p.po===po); }
+function escapeHtml(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function isAdmin(){ return !!(currentUser && currentUser.role === 'Admin'); }
+
+// Central authorization check. Admin -> always true. Non-admin -> only true
+// if the currently logged-in member is active and has that page enabled.
+// Used both for sidebar visibility AND for direct navigation guards, so it
+// cannot be bypassed by manually calling goPage() from the console.
+function hasPermission(pageKey){
+  if(isAdmin()) return true;
+  if(!currentUser) return false;
+  const member = DB.members.find(m => m.id === currentUser.id);
+  if(!member || !member.active) return false;
+  if(member.role === 'Admin') return true;
+  return !!(member.permissions && member.permissions[pageKey]);
+}
+
+// Quality editing requires Admin, or a user who both has PO Stock Management
+// access AND the separate "PO Quality Management" permission enabled.
+function canEditQuality(){
+  if(isAdmin()) return true;
+  return hasPermission('poStock') && hasPermission('poQuality');
+}
+
+// Add/Update/Delete PO (and Re-used Bags, which piggybacks on PO editing
+// rather than Quality) requires Admin, or a user with BOTH PO Stock
+// Management access AND the separate "Add / Update Purchase Order"
+// permission enabled. If PO Stock Management is off, editing is off too
+// regardless of the poEdit flag.
+function canEditPO(){
+  if(isAdmin()) return true;
+  return hasPermission('poStock') && hasPermission('poEdit');
+}
+
+// Re-used Bags are independent stock, tracked per ITEM NAME (not per PO) —
+// they are not linked to any Purchase Order and skip Quality Approval
+// entirely, so they're issueable the moment they're added. Approved PO stock
+// and Re-used stock are kept as two separately identifiable pools.
+function reusedTotalForItem(item){
+  return DB.reuses.filter(r=>r.item===item).reduce((s,r)=>s+r.qty,0);
+}
+// Reused bags already consumed by past issues, for a given item. Legacy issue
+// records saved before this split existed have no fromReused field — treat
+// their whole qty as having come from Approved PO stock (fromApproved), so
+// they never retroactively double-count against reused stock.
+function reusedIssuedForItem(item){
+  return DB.issues.filter(i=>i.item===item).reduce((s,i)=>s+(i.fromReused||0),0);
+}
+function reusedAvailableForItem(item){
+  return Math.max(0, reusedTotalForItem(item) - reusedIssuedForItem(item));
+}
+// Approved-PO-stock already consumed by past issues, for a specific PO.
+function approvedIssuedForPO(po){
+  return DB.issues.filter(i=>i.po===po).reduce((s,i)=>s+(typeof i.fromApproved==='number' ? i.fromApproved : i.qty),0);
+}
+function approvedAvailableForPO(p){
+  return Math.max(0, (p.approvedBags||0) - approvedIssuedForPO(p.po));
+}
+// Breakdown of what's still issueable against a given PO: its own Approved
+// PO Stock, plus the Re-used stock pool for that PO's item (Re-used bags are
+// shared across every PO of the same item, since they're not PO-specific).
+function issueBreakdown(p){
+  const approvedAvail = approvedAvailableForPO(p);
+  const reusedAvail = reusedAvailableForItem(p.name);
+  return {approvedAvail, reusedAvail, totalIssueable: approvedAvail + reusedAvail};
+}
+function approvedAvailable(p){
+  return issueBreakdown(p).totalIssueable;
+}
+function pendingQualityBags(p){
+  return Math.max(0, p.totalBags - (p.approvedBags||0) - (p.rejectedBags||0));
+}
+// Total issueable stock across the whole system: Approved PO Stock still
+// available on every PO, plus Re-used stock still available for every item
+// that has ever had re-used bags added (regardless of whether a PO for that
+// item currently exists).
+function totalAvailableBags(){
+  const approvedTotal = DB.pos.reduce((s,p)=>s+approvedAvailableForPO(p),0);
+  const items = Array.from(new Set(DB.reuses.map(r=>r.item)));
+  const reusedTotal = items.reduce((s,item)=>s+reusedAvailableForItem(item),0);
+  return approvedTotal + reusedTotal;
+}
+
+/* Load the database immediately so member records exist for login validation,
+   even before the user has signed in. */
+let dbInitializationPromise = loadDB();
+function updateLoginStats(){
+  const bags = totalAvailableBags();
+  const posEl = document.getElementById('login-stat-pos');
+  const bagsEl = document.getElementById('login-stat-bags');
+  if(bagsEl) bagsEl.textContent = bags.toLocaleString();
+  if(posEl) posEl.textContent = DB.pos.length.toLocaleString();
+}
+if(dbInitializationPromise && typeof dbInitializationPromise.then === 'function'){
+  dbInitializationPromise.then(()=>updateLoginStats()).catch(()=>updateLoginStats());
+} else {
+  updateLoginStats();
+}
+
+/* ============ LOGIN ============ */
+function applyRoleVisibility(){
+  const membersNav = document.getElementById('nav-members');
+  if(membersNav) membersNav.style.display = isAdmin() ? 'flex' : 'none';
+  Object.keys(PAGE_PERMISSION_MAP).forEach(pageName => {
+    const navEl = document.getElementById('nav-' + pageName);
+    if(navEl) navEl.style.display = hasPermission(PAGE_PERMISSION_MAP[pageName]) ? 'flex' : 'none';
+  });
+  const deptPanel = document.getElementById('dept-mgmt-panel');
+  if(deptPanel) deptPanel.style.display = isAdmin() ? 'block' : 'none';
+}
+
+document.getElementById('login-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(dbInitializationPromise) await dbInitializationPromise;
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errBox = document.getElementById('login-error');
+  errBox.style.display='none';
+
+  const member = DB.members.find(m => m.username.toLowerCase() === user.toLowerCase());
+
+  if(member && member.locked){
+    showLockedModal('Your account has been locked after 5 unsuccessful login attempts.');
+    return;
+  }
+  if(!member || member.password !== pass){
+    if(member){
+      member.failedAttempts = (member.failedAttempts||0) + 1;
+      if(member.failedAttempts >= 5){
+        member.locked = true;
+        member.failedAttempts = 5;
+        saveDB();
+        showLockedModal('Your account has been locked after 5 unsuccessful login attempts.');
+        return;
+      }
+      saveDB();
+      errBox.textContent = `Invalid username or password. Attempt ${member.failedAttempts}/5.`;
+    } else {
+      errBox.textContent = 'Invalid username or password.';
+    }
+    errBox.style.display='block';
+    return;
+  }
+  if(!member.active){
+    errBox.textContent = 'This account is inactive. Please contact your administrator.';
+    errBox.style.display='block';
+    return;
+  }
+
+  member.failedAttempts = 0;
+  saveDB();
+  currentUser = {id: member.id, name: member.name, username: member.username, role: member.role};
+  document.getElementById('profile-name').textContent = member.name;
+  document.getElementById('profile-role').textContent = member.role;
+  document.getElementById('avatar-initial').textContent = member.name.trim()[0].toUpperCase();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  applyRoleVisibility();
+  boot();
+  goPage('dashboard');
+});
+function showLockedModal(message){
+  document.getElementById('locked-modal-message').textContent = message;
+  document.getElementById('locked-modal-overlay').classList.add('open');
+}
+document.getElementById('locked-modal-close-btn').addEventListener('click', function(){
+  document.getElementById('locked-modal-overlay').classList.remove('open');
+});
+
+document.getElementById('logout-btn').addEventListener('click', function(){
+  currentUser = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-form').reset();
+  document.getElementById('login-error').style.display='none';
+  goPage('dashboard');
+  updateLoginStats();
+});
+
+/* ============ PROFILE DROPDOWN / MY PROFILE / CHANGE PASSWORD ============ */
+document.getElementById('profile-chip-btn').addEventListener('click', function(e){
+  e.stopPropagation();
+  document.getElementById('profile-dropdown').classList.toggle('open');
+});
+document.addEventListener('click', function(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+});
+document.getElementById('menu-my-profile').addEventListener('click', function(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+  if(!currentUser) return;
+  document.getElementById('pm-name').textContent = currentUser.name;
+  document.getElementById('pm-username').textContent = currentUser.username;
+  document.getElementById('pm-role').textContent = currentUser.role;
+  document.getElementById('profile-modal-overlay').classList.add('open');
+});
+document.getElementById('profile-modal-close').addEventListener('click', function(){
+  document.getElementById('profile-modal-overlay').classList.remove('open');
+});
+document.getElementById('profile-modal-overlay').addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('open');
+});
+document.getElementById('menu-logout').addEventListener('click', function(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+  document.getElementById('logout-btn').click();
+});
+document.getElementById('menu-change-password').addEventListener('click', function(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+  openChangePasswordModal();
+});
+function openChangePasswordModal(){
+  document.getElementById('cp-current').value = '';
+  document.getElementById('cp-new').value = '';
+  document.getElementById('cp-confirm').value = '';
+  document.getElementById('password-alert').style.display='none';
+  document.getElementById('password-success').style.display='none';
+  document.getElementById('password-modal-overlay').classList.add('open');
+}
+function closeChangePasswordModal(){
+  document.getElementById('password-modal-overlay').classList.remove('open');
+}
+document.getElementById('password-modal-close').addEventListener('click', closeChangePasswordModal);
+document.getElementById('cp-cancel-btn').addEventListener('click', closeChangePasswordModal);
+document.getElementById('password-modal-overlay').addEventListener('click', function(e){
+  if(e.target === this) closeChangePasswordModal();
+});
+document.getElementById('cp-save-btn').addEventListener('click', function(){
+  const errBox = document.getElementById('password-alert');
+  const okBox = document.getElementById('password-success');
+  errBox.style.display='none'; okBox.style.display='none';
+  if(!currentUser){ return; }
+  // A user may only ever change their OWN password from this form — it is
+  // always scoped to the currently logged-in account, never another user's.
+  const member = DB.members.find(m => m.id === currentUser.id);
+  if(!member) return;
+
+  const cur = document.getElementById('cp-current').value;
+  const next = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+
+  if(cur !== member.password){
+    errBox.textContent = 'Current password is incorrect.';
+    errBox.style.display='flex';
+    return;
+  }
+  if(!next){
+    errBox.textContent = 'New password cannot be empty.';
+    errBox.style.display='flex';
+    return;
+  }
+  if(next !== confirm){
+    errBox.textContent = 'New password and confirmation do not match.';
+    errBox.style.display='flex';
+    return;
+  }
+  if(next === cur){
+    errBox.textContent = 'New password should not be the same as the old password.';
+    errBox.style.display='flex';
+    return;
+  }
+  member.password = next;
+  saveDB();
+  okBox.textContent = 'Password changed successfully.';
+  okBox.style.display='flex';
+  document.getElementById('cp-current').value = '';
+  document.getElementById('cp-new').value = '';
+  document.getElementById('cp-confirm').value = '';
+});
+
+/* ============ NAVIGATION ============ */
+function goPage(name){
+  // Authorization checks — enforced here (not just in the sidebar) so that
+  // manually calling goPage('postock') etc. from the console cannot bypass
+  // permissions. Admin always passes; non-admin is checked against their
+  // saved permissions.
+  if(name==='members' && !isAdmin()){
+    alert('Access Denied — You do not have permission to access this section.');
+    name='dashboard';
+  } else if(PAGE_PERMISSION_MAP[name] && !hasPermission(PAGE_PERMISSION_MAP[name])){
+    alert('Access Denied — You do not have permission to access this section.');
+    name='dashboard';
+  }
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.toggle('active', n.dataset.page===name));
+  if(name==='deptrequest') populateRequestForm();
+  if(name==='members') renderMembers();
+  if(name==='dashboard'){
+    // Bar charts are sized from their container's live width, so redraw
+    // once the page is actually visible again (a hidden page has 0 width).
+    drawDeptChart();
+    drawQualityChart();
+  }
+  if(name==='reports') ensureJsPDFLoaded();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-page]').forEach(el=>{
+  el.addEventListener('click', ()=>goPage(el.dataset.page));
+});
+
+/* ============ CLOCK ============ */
+function tickClock(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('datetime-chip').textContent = `📅 ${dateStr} | ${timeStr}`;
+}
+
+/* ============ RENDER: DASHBOARD ============ */
+function formatDate(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  if(isNaN(d.getTime())) return escapeHtml(dateStr);
+  return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+}
+// Formats a "YYYY-MM-DDTHH:MM" (datetime-local) or full ISO string into a
+// readable "24 Sep 2026, 08:30" for Quality Date & Time display.
+function formatDateTime(dtStr){
+  if(!dtStr) return '—';
+  const d = new Date(dtStr);
+  if(isNaN(d.getTime())) return escapeHtml(dtStr);
+  const datePart = d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  const timePart = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+  return `${datePart}, ${timePart}`;
+}
+function renderDashboard(filter){
+  filter = (filter||'').toLowerCase();
+  const totalBags = totalAvailableBags();
+  const pending = DB.requests.filter(r=>r.status==='Pending').length;
+  const issued = DB.requests.filter(r=>r.status==='Issued').length;
+  document.getElementById('kpi-bags').textContent = totalBags.toLocaleString();
+  document.getElementById('kpi-pending').textContent = pending;
+  document.getElementById('kpi-issued').textContent = issued;
+
+  const poRows = DB.pos.filter(p =>
+    !filter || p.po.toLowerCase().includes(filter) || p.name.toLowerCase().includes(filter)
+  );
+  document.getElementById('dash-po-table').innerHTML = poRows.map(p=>`
+    <tr>
+      <td class="po-link">${escapeHtml(p.po)}</td><td>${escapeHtml(p.name)}</td>
+      <td class="mono">${p.totalBags}</td><td class="mono">${approvedAvailableForPO(p)}</td>
+      <td>${formatDate(p.receivedDate)}</td>
+    </tr>`).join('') || `<tr class="empty-row"><td colspan="5">No purchase orders yet. Add one from PO Stock Management.</td></tr>`;
+
+  const recent = [...DB.requests].sort((a,b)=> b.id.localeCompare(a.id)).slice(0,5);
+  document.getElementById('dash-recent-table').innerHTML = recent.map(r=>`
+    <tr>
+      <td class="po-link">${escapeHtml(r.id)}</td><td>${escapeHtml(r.dept)}</td><td>${escapeHtml(r.po)||'—'}</td><td class="mono">${r.qty}</td>
+      <td><span class="status-pill ${r.status}">${r.status}</span></td>
+    </tr>`).join('') || `<tr class="empty-row"><td colspan="5">No requests yet.</td></tr>`;
+
+  drawDonut();
+  drawDeptChart();
+  renderQualitySummary();
+  renderApprovedBagsSummary();
+  drawQualityChart();
+}
+
+/* ============ QUALITY SUMMARY (DASHBOARD) ============ */
+function qualityTotals(){
+  const totalBags = DB.pos.reduce((s,p)=>s+p.totalBags,0);
+  const approved = DB.pos.reduce((s,p)=>s+(p.approvedBags||0),0);
+  const rejected = DB.pos.reduce((s,p)=>s+(p.rejectedBags||0),0);
+  const pending = DB.pos.reduce((s,p)=>s+pendingQualityBags(p),0);
+  return {totalBags, approved, rejected, pending};
+}
+function renderQualitySummary(){
+  const {totalBags, approved, rejected, pending} = qualityTotals();
+  const pct = n => totalBags>0 ? Math.round((n/totalBags)*100) : 0;
+  document.getElementById('kpi-quality-approved').textContent = approved.toLocaleString();
+  document.getElementById('kpi-quality-rejected').textContent = rejected.toLocaleString();
+  document.getElementById('kpi-quality-pending').textContent = pending.toLocaleString();
+  document.getElementById('kpi-quality-approved-pct').textContent = pct(approved)+'% of total';
+  document.getElementById('kpi-quality-rejected-pct').textContent = pct(rejected)+'% of total';
+  document.getElementById('kpi-quality-pending-pct').textContent = pct(pending)+'% of total';
+}
+function drawQualityChart(){
+  const {approved, rejected, pending} = qualityTotals();
+  drawSimpleBarChart('quality-bar-chart', ['Approved','Rejected','Pending'], [approved,rejected,pending], ['#0f9d63','#e0453f','#e08a1f'], 'bags');
+}
+// Approved Bags summary shown beside the Department Issue Overview chart —
+// total PO bags that have passed Quality Approval (never mixed with issued
+// or re-used bag figures).
+function renderApprovedBagsSummary(){
+  const {totalBags, approved} = qualityTotals();
+  const pct = totalBags>0 ? Math.round((approved/totalBags)*100) : 0;
+  const valEl = document.getElementById('dash-approved-value');
+  const pctEl = document.getElementById('dash-approved-pct');
+  if(valEl) valEl.textContent = approved.toLocaleString();
+  if(pctEl) pctEl.textContent = `${pct}% of total PO bags`;
+}
+
+document.getElementById('dash-po-search').addEventListener('input', e=>renderDashboard(e.target.value));
+
+/* ============ DONUT CHART (canvas) ============ */
+const donutColors = ['#3b82f6','#12b981','#f5a742','#8b6be0','#e0453f','#14b8b0'];
+function drawDonut(){
+  const canvas = document.getElementById('donut-canvas');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width/2, cy = canvas.height/2, rOuter=90, rInner=56;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const total = DB.pos.reduce((s,p)=>s+approvedAvailableForPO(p),0) || 1;
+  let start = -Math.PI/2;
+  DB.pos.forEach((p,i)=>{
+    const slice = (approvedAvailableForPO(p)/total) * Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,rOuter,start,start+slice);
+    ctx.closePath();
+    ctx.fillStyle = donutColors[i % donutColors.length];
+    ctx.fill();
+    start += slice;
+  });
+  ctx.globalCompositeOperation='destination-out';
+  ctx.beginPath(); ctx.arc(cx,cy,rInner,0,Math.PI*2); ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle = '#101828';
+  ctx.textAlign='center';
+  ctx.font='700 22px Sora, sans-serif';
+  ctx.fillText(total.toLocaleString(), cx, cy-2);
+  ctx.font='600 11px Manrope, sans-serif';
+  ctx.fillStyle = '#8896a8';
+  ctx.fillText('Bags Available', cx, cy+16);
+
+  document.getElementById('donut-legend').innerHTML = DB.pos.map((p,i)=>{
+    const avail = approvedAvailableForPO(p);
+    const pct = Math.round((avail/total)*100);
+    return `<div class="legend-row">
+      <div class="legend-left"><span class="dot" style="background:${donutColors[i%donutColors.length]}"></span>${p.po}</div>
+      <span class="legend-val">${avail} (${pct}%)</span>
+    </div>`;
+  }).join('');
+}
+
+/* ============ NATIVE BAR CHART (no external library — same approach
+   as the Stock Overview donut chart, so it never depends on a CDN load) ============ */
+function drawSimpleBarChart(canvasId, categories, values, colors, unitLabel){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const wrap = canvas.parentElement;
+  const cssWidth = Math.max(280, wrap.clientWidth || 600);
+  const cssHeight = 260;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.width = cssWidth+'px';
+  canvas.style.height = cssHeight+'px';
+  canvas.width = Math.round(cssWidth*dpr);
+  canvas.height = Math.round(cssHeight*dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssWidth,cssHeight);
+
+  const padding = {top:26, right:18, bottom:36, left:40};
+  const chartW = cssWidth - padding.left - padding.right;
+  const chartH = cssHeight - padding.top - padding.bottom;
+  const maxVal = Math.max(1, ...values, 4);
+  const niceMax = Math.ceil(maxVal/4)*4 || 4;
+
+  // Gridlines + y-axis ticks
+  ctx.strokeStyle = '#eef1f7';
+  ctx.fillStyle = '#8896a8';
+  ctx.font = '600 10.5px Manrope, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for(let i=0;i<=4;i++){
+    const val = Math.round((niceMax/4)*i);
+    const y = padding.top + chartH - (chartH*(i/4));
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(padding.left+chartW, y);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillText(val, padding.left-8, y);
+  }
+
+  const n = Math.max(categories.length, 1);
+  const slot = chartW/n;
+  const barWidth = Math.min(64, slot*0.5);
+  const bars = [];
+
+  categories.forEach((cat,i)=>{
+    const val = values[i]||0;
+    const barH = niceMax>0 ? (val/niceMax)*chartH : 0;
+    const x = padding.left + slot*i + slot/2 - barWidth/2;
+    const y = padding.top + chartH - barH;
+    const color = Array.isArray(colors) ? colors[i%colors.length] : colors;
+    const r = Math.min(8, barWidth/2);
+
+    if(barH > 0){
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x, y+barH);
+      ctx.lineTo(x, y+r);
+      ctx.arcTo(x, y, x+r, y, r);
+      ctx.lineTo(x+barWidth-r, y);
+      ctx.arcTo(x+barWidth, y, x+barWidth, y+r, r);
+      ctx.lineTo(x+barWidth, y+barH);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#101828';
+    ctx.font = '700 12px Manrope, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(val.toLocaleString(), x+barWidth/2, y-8);
+
+    ctx.fillStyle = '#5b6b81';
+    ctx.font = '600 11px Manrope, sans-serif';
+    const label = cat.length>12 ? cat.slice(0,11)+'…' : cat;
+    ctx.fillText(label, x+barWidth/2, padding.top+chartH+18);
+
+    bars.push({x, y, w:barWidth, h:Math.max(barH,4), val, cat});
+  });
+
+  bindBarChartTooltip(canvas, bars, unitLabel||'');
+}
+function bindBarChartTooltip(canvas, bars, unitLabel){
+  let tip = document.getElementById('chart-tooltip');
+  if(!tip){
+    tip = document.createElement('div');
+    tip.id = 'chart-tooltip';
+    tip.style.cssText = 'position:fixed;z-index:80;pointer-events:none;background:#0b1c3d;color:#fff;font:600 11.5px Manrope, sans-serif;padding:6px 10px;border-radius:7px;display:none;box-shadow:0 8px 20px -6px rgba(0,0,0,.35);white-space:nowrap;';
+    document.body.appendChild(tip);
+  }
+  canvas.onmousemove = function(e){
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const hit = bars.find(b => mx>=b.x && mx<=b.x+b.w && my>=b.y && my<=b.y+b.h+40);
+    if(hit){
+      tip.style.display='block';
+      tip.style.left = (e.clientX+14)+'px';
+      tip.style.top = (e.clientY-14)+'px';
+      tip.textContent = `${hit.cat}: ${hit.val.toLocaleString()}${unitLabel?(' '+unitLabel):''}`;
+    } else {
+      tip.style.display='none';
+    }
+  };
+  canvas.onmouseleave = function(){ tip.style.display='none'; };
+}
+window.addEventListener('resize', debounce(function(){
+  drawDeptChart();
+  drawQualityChart();
+}, 200));
+function debounce(fn, wait){
+  let t;
+  return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
+}
+
+/* ============ DEPARTMENT ISSUE OVERVIEW (Dashboard chart) ============ */
+// Filter state for the Department Issue Overview chart: 'all' | 'weekly' | 'monthly'.
+let deptChartFilterType = 'all';
+function currentDeptChartRange(){
+  if(deptChartFilterType === 'weekly'){
+    const wk = document.getElementById('dept-filter-week').value;
+    if(!wk) return null;
+    const {start,end} = isoWeekToRange(wk);
+    return {start, end, startStr: isoDate(start), endStr: isoDate(end), label: `${prettyDate(start)} – ${prettyDate(end)}`};
+  }
+  if(deptChartFilterType === 'monthly'){
+    const mo = document.getElementById('dept-filter-month').value;
+    if(!mo) return null;
+    const {start,end} = monthToRange(mo);
+    return {start, end, startStr: isoDate(start), endStr: isoDate(end), label: prettyDate(start).replace(/\d{1,2} /,'')};
+  }
+  return null; // All Time
+}
+// Bags actually ISSUED to each department (from Issue History / DB.issues),
+// calculated from the real issueDate — never the number of requests, and
+// never the request creation date. Departments with zero issued bags in the
+// selected period are still included, at 0.
+function departmentIssueData(){
+  const depts = (DB.departments||[]).map(d=>d.name);
+  const range = currentDeptChartRange();
+  const issues = range
+    ? DB.issues.filter(i => inRange(i.issueDate, range.startStr, range.endStr))
+    : DB.issues;
+  const values = depts.map(name => issues.filter(i=>i.dept===name).reduce((s,i)=>s+i.qty,0));
+  return {depts, values, range};
+}
+function drawDeptChart(){
+  const {depts, values} = departmentIssueData();
+  drawSimpleBarChart('dept-bar-chart', depts, values, '#3b82f6', 'bags');
+}
+document.getElementById('dept-filter-type').addEventListener('change', function(){
+  deptChartFilterType = this.value;
+  document.getElementById('dept-filter-week-field').style.display = deptChartFilterType==='weekly' ? 'block' : 'none';
+  document.getElementById('dept-filter-month-field').style.display = deptChartFilterType==='monthly' ? 'block' : 'none';
+  if(deptChartFilterType==='weekly' && !document.getElementById('dept-filter-week').value){
+    document.getElementById('dept-filter-week').value = currentIsoWeekString();
+  }
+  if(deptChartFilterType==='monthly' && !document.getElementById('dept-filter-month').value){
+    document.getElementById('dept-filter-month').value = new Date().toISOString().slice(0,7);
+  }
+  drawDeptChart();
+});
+document.getElementById('dept-filter-week').addEventListener('change', drawDeptChart);
+document.getElementById('dept-filter-month').addEventListener('change', drawDeptChart);
+function currentIsoWeekString(){
+  const d = new Date();
+  const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(),0,1));
+  const weekNum = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+  return `${target.getUTCFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+function deptChartPeriodLabel(){
+  if(deptChartFilterType==='all') return 'All Time';
+  const range = currentDeptChartRange();
+  if(!range) return deptChartFilterType==='weekly' ? 'Weekly' : 'Monthly';
+  return range.label;
+}
+function deptChartExportTitle(){
+  if(deptChartFilterType==='weekly') return 'Department Issue Report – Weekly';
+  if(deptChartFilterType==='monthly') return 'Department Issue Report – Monthly';
+  return 'Department Issue Report – All Time';
+}
+function exportDeptChartPDF(){
+  const btn = document.getElementById('dept-chart-export-btn');
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generating…'; btn.disabled = true;
+  ensureJsPDFLoaded().then(()=>{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'portrait', unit:'pt', format:'a4'});
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 34;
+    let y = margin;
+
+    const {depts, values} = departmentIssueData();
+    const total = values.reduce((s,v)=>s+v,0);
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(11,28,61);
+    doc.text('Greige Bag System', margin, y+8);
+    doc.setFontSize(12); doc.setTextColor(37,99,235);
+    doc.text('Department Issue Report', margin, y+28);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,100,120);
+    doc.text(`Period: ${deptChartPeriodLabel()}`, margin, y+44);
+    doc.setDrawColor(230,233,240);
+    doc.line(margin, y+56, pageW-margin, y+56);
+    y += 70;
+    doc.setTextColor(20,20,20);
+
+    // Chart image (captured straight from the on-screen canvas).
+    const canvas = document.getElementById('dept-bar-chart');
+    if(canvas){
+      const imgData = canvas.toDataURL('image/png');
+      const imgW = pageW - margin*2;
+      const imgH = imgW * (canvas.height/canvas.width);
+      doc.addImage(imgData, 'PNG', margin, y, imgW, Math.min(imgH, 260));
+      y += Math.min(imgH, 260) + 20;
+    }
+
+    y = pdfSectionTitle(doc, deptChartExportTitle(), margin, y, pageW, margin, pageH);
+    y = pdfTable(doc, {
+      x: margin, y, margin, pageW, pageH,
+      headers: ['Department','Issued Bags'],
+      colWidths: [(pageW-margin*2)*0.7, (pageW-margin*2)*0.3],
+      rows: depts.map((d,i)=>[d, values[i]]),
+    });
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(11,28,61);
+    doc.text(`Total Issued Bags: ${total.toLocaleString()}`, margin, y+4);
+    y += 24;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,100,120);
+    doc.text(`Generated By: ${currentUser ? currentUser.name : 'Unknown'}`, margin, y);
+    y += 14;
+    doc.text(`Generated Date: ${prettyDate(new Date())}`, margin, y);
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i=1;i<=pageCount;i++){
+      doc.setPage(i);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(140,148,165);
+      doc.text(`Page ${i} of ${pageCount}`, pageW - margin - 60, pageH - 14);
+    }
+
+    doc.save(`Department_Issue_Report_${deptChartFilterType}_${isoDate(new Date())}.pdf`);
+    btn.textContent = originalLabel; btn.disabled = false;
+  }).catch(()=>{
+    alert('The PDF library could not be loaded — please check your internet connection and try again.');
+    btn.textContent = originalLabel; btn.disabled = false;
+  });
+}
+document.getElementById('dept-chart-export-btn').addEventListener('click', exportDeptChartPDF);
+
+/* ============ RENDER: PO STOCK MANAGEMENT ============ */
+function applyPOFreezeUI(){
+  const banner = document.getElementById('po-frozen-banner');
+  const formPanel = document.getElementById('po-form-panel');
+  const reuseBtn = document.getElementById('reuse-add-btn');
+  const frozen = hasPermission('poStock') && !canEditPO();
+  if(banner) banner.style.display = frozen ? 'flex' : 'none';
+  if(formPanel) formPanel.style.display = canEditPO() ? 'block' : 'none';
+  if(reuseBtn) reuseBtn.style.display = canEditPO() ? 'inline-flex' : 'none';
+}
+function renderPOStock(filter){
+  filter = (filter||'').toLowerCase();
+  applyPOFreezeUI();
+  const rows = DB.pos.filter(p =>
+    !filter || p.po.toLowerCase().includes(filter) || p.name.toLowerCase().includes(filter)
+  );
+  document.getElementById('postock-table').innerHTML = rows.map(p=>{
+    const pending = pendingQualityBags(p);
+    const updatedLine = p.qualityDateTime
+      ? `<div style="font-size:10.5px;color:var(--slate-400);margin-top:4px;">Updated: ${formatDateTime(p.qualityDateTime)}${p.qualityUpdatedBy ? ' · '+escapeHtml(p.qualityUpdatedBy.name) : ''}</div>`
+      : '';
+    return `<tr>
+      <td class="po-link">${escapeHtml(p.po)}</td><td>${escapeHtml(p.name)}</td>
+      <td class="mono">${p.totalBags}</td><td class="mono">${approvedAvailableForPO(p)}</td>
+      <td>${formatDate(p.receivedDate)}</td>
+      <td>
+        <div class="qty-badges">
+          <span class="qty-badge approved">🟢 ${p.approvedBags||0}</span>
+          <span class="qty-badge rejected">🔴 ${p.rejectedBags||0}</span>
+          <span class="qty-badge pending">🟡 ${pending}</span>
+        </div>
+        ${updatedLine}
+      </td>
+      <td>${canEditQuality() ? `<button type="button" class="action-btn neutral" data-quality-po="${escapeHtml(p.po)}">Update Quality</button>` : '—'}</td>
+    </tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="7">No purchase orders yet. Use the form above to add one.</td></tr>`;
+
+  document.querySelectorAll('#postock-table [data-quality-po]').forEach(btn=>{
+    btn.addEventListener('click', ()=>openQualityModal(btn.dataset.qualityPo));
+  });
+  renderReuseHistory();
+}
+document.getElementById('postock-search').addEventListener('input', e=>renderPOStock(e.target.value));
+
+/* ---- Item Name dropdown (with "+ Add New Item") ----
+   Shared across every "Item Name" select in the system (Add/Update PO, and
+   Add Re-used Bags), so Admin/authorized users can add a new item from
+   either place and have it immediately available everywhere. */
+function populateItemSelect(selId, selected){
+  const sel = document.getElementById(selId);
+  if(!sel) return;
+  const chosen = selected || sel.value || DB.itemNames[0];
+  sel.innerHTML = DB.itemNames.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+    + `<option value="__add_new__">+ Add New Item</option>`;
+  sel.value = DB.itemNames.includes(chosen) ? chosen : DB.itemNames[0];
+  sel.dataset.prevValue = sel.value;
+}
+function populateItemNameDropdown(selected){
+  populateItemSelect('po-itemname', selected);
+}
+function handleAddNewItemChange(){
+  if(this.value === '__add_new__'){
+    const prevValue = this.dataset.prevValue || DB.itemNames[0];
+    const newName = prompt('Enter the new item name:');
+    if(newName === null || !newName.trim()){
+      this.value = prevValue;
+      return;
+    }
+    const trimmed = newName.trim();
+    const exists = DB.itemNames.some(n => n.toLowerCase() === trimmed.toLowerCase());
+    if(exists){
+      alert('This item name already exists.');
+      this.value = prevValue;
+      return;
+    }
+    DB.itemNames.push(trimmed);
+    saveDB();
+    // Refresh every Item Name select in the system, keeping this one on the
+    // newly added item and leaving the others as they were.
+    populateItemSelect('po-itemname', this.id==='po-itemname' ? trimmed : undefined);
+    populateItemSelect('reuse-item-select', this.id==='reuse-item-select' ? trimmed : undefined);
+  } else {
+    this.dataset.prevValue = this.value;
+  }
+}
+document.getElementById('po-itemname').addEventListener('change', handleAddNewItemChange);
+
+document.getElementById('po-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const alertBox = document.getElementById('po-alert');
+  if(!canEditPO()){
+    alertBox.textContent = 'Access Denied — Purchase Order editing is currently restricted for your account.';
+    alertBox.style.display='flex';
+    return;
+  }
+  const po = document.getElementById('po-number').value.trim().toUpperCase();
+  const itemNameSel = document.getElementById('po-itemname');
+  if(!itemNameSel.value || itemNameSel.value === '__add_new__'){
+    alertBox.textContent = 'Please select a valid item name.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(poByNumber(po)){
+    alertBox.textContent = `Purchase order ${po} already exists.`;
+    alertBox.style.display='flex';
+    return;
+  }
+  const receivedDate = document.getElementById('po-receiveddate').value;
+  if(!receivedDate){
+    alertBox.textContent = 'Please select the Received Date.';
+    alertBox.style.display='flex';
+    return;
+  }
+  alertBox.style.display='none';
+  const bags = parseInt(document.getElementById('po-bags').value,10);
+  DB.pos.push({
+    po,
+    name: itemNameSel.value,
+    totalBags: bags, receivedDate,
+    // New stock is issueable immediately — auto-approved in full. Admin/authorized
+    // users can adjust Approved/Rejected later via "Update Quality" if needed.
+    approvedBags: bags, rejectedBags: 0,
+  });
+  saveDB();
+  this.reset();
+  populateItemNameDropdown(DB.itemNames[0]);
+  renderAll();
+});
+
+/* ============ QUALITY STATUS MODAL ============ */
+// Local datetime string ("YYYY-MM-DDTHH:MM") suitable for an
+// <input type="datetime-local">, using the device's current local time.
+function nowForDateTimeLocal(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function openQualityModal(po){
+  if(!canEditQuality()){ alert('Unauthorized: PO Quality Management access required.'); return; }
+  const p = poByNumber(po);
+  if(!p) return;
+  document.getElementById('qm-po-hidden').value = p.po;
+  document.getElementById('qm-po').textContent = p.po;
+  document.getElementById('qm-item').textContent = p.name;
+  document.getElementById('qm-total').textContent = p.totalBags;
+  document.getElementById('qm-approved').value = p.approvedBags||0;
+  document.getElementById('qm-rejected').value = p.rejectedBags||0;
+  // Default to the current date/time, but let the user pick a different one.
+  document.getElementById('qm-datetime').value = nowForDateTimeLocal();
+  const lastUpdatedEl = document.getElementById('qm-last-updated');
+  lastUpdatedEl.textContent = p.qualityDateTime
+    ? `Quality Updated: ${formatDateTime(p.qualityDateTime)} · Updated By: ${(p.qualityUpdatedBy && p.qualityUpdatedBy.name) || '—'}`
+    : '';
+  document.getElementById('quality-alert').style.display='none';
+  updateQualityPendingPreview();
+  document.getElementById('quality-modal-overlay').classList.add('open');
+}
+function closeQualityModal(){
+  document.getElementById('quality-modal-overlay').classList.remove('open');
+}
+function updateQualityPendingPreview(){
+  const total = parseInt(document.getElementById('qm-total').textContent,10) || 0;
+  const approved = parseInt(document.getElementById('qm-approved').value,10) || 0;
+  const rejected = parseInt(document.getElementById('qm-rejected').value,10) || 0;
+  const pending = Math.max(0, total - approved - rejected);
+  document.getElementById('qm-pending').textContent = pending;
+}
+document.getElementById('qm-approved').addEventListener('input', updateQualityPendingPreview);
+document.getElementById('qm-rejected').addEventListener('input', updateQualityPendingPreview);
+document.getElementById('quality-modal-close').addEventListener('click', closeQualityModal);
+document.getElementById('qm-cancel-btn').addEventListener('click', closeQualityModal);
+document.getElementById('quality-modal-overlay').addEventListener('click', function(e){
+  if(e.target === this) closeQualityModal();
+});
+document.getElementById('qm-save-btn').addEventListener('click', function(){
+  if(!canEditQuality()){ alert('Unauthorized: PO Quality Management access required.'); return; }
+  const alertBox = document.getElementById('quality-alert');
+  alertBox.style.display='none';
+  const po = document.getElementById('qm-po-hidden').value;
+  const p = poByNumber(po);
+  if(!p) return;
+  const approvedRaw = document.getElementById('qm-approved').value;
+  const rejectedRaw = document.getElementById('qm-rejected').value;
+  const approved = Number(approvedRaw);
+  const rejected = Number(rejectedRaw);
+
+  if(approvedRaw==='' || rejectedRaw==='' || !Number.isFinite(approved) || !Number.isFinite(rejected)){
+    alertBox.textContent = 'Please enter both Approved and Rejected bag quantities.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(!Number.isInteger(approved) || !Number.isInteger(rejected)){
+    alertBox.textContent = 'Only whole bag quantities are allowed (no decimals).';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(approved < 0 || rejected < 0){
+    alertBox.textContent = 'Bag quantities cannot be negative.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(approved + rejected > p.totalBags){
+    alertBox.textContent = `Approved + Rejected cannot exceed Total Bags (${p.totalBags}).`;
+    alertBox.style.display='flex';
+    return;
+  }
+  const qualityDateTime = document.getElementById('qm-datetime').value;
+  if(!qualityDateTime){
+    alertBox.textContent = 'Please select the Quality Date & Time.';
+    alertBox.style.display='flex';
+    return;
+  }
+
+  p.approvedBags = approved;
+  p.rejectedBags = rejected;
+  // The user-selected Quality Date & Time is always preserved as entered —
+  // never silently overwritten with just the browser's current time.
+  p.qualityDateTime = qualityDateTime;
+  p.qualityUpdatedBy = currentUser ? {userId: currentUser.id, username: currentUser.username, name: currentUser.name} : null;
+  p.qualityUpdatedAt = new Date().toISOString();
+  saveDB();
+
+  // Audit trail: every Approved/Rejected change creates a permanent quality
+  // update history record, in addition to updating the PO's latest values.
+  const qid = 'QUALITY-' + String(DB.nextQualityNum).padStart(4,'0');
+  DB.nextQualityNum++;
+  DB.qualityHistory.push({
+    id: qid,
+    po: p.po,
+    approvedBags: approved,
+    rejectedBags: rejected,
+    qualityDateTime,
+    updatedByUserId: currentUser ? currentUser.id : null,
+    updatedByName: currentUser ? currentUser.name : 'Unknown',
+  });
+  saveDB();
+
+  closeQualityModal();
+  renderAll();
+});
+
+/* ============ RE-USED BAGS ============
+   Re-used Bags are independent stock: NOT linked to any Purchase Order, NOT
+   requiring Quality Approval, and NOT counted in PO Approved/Rejected/
+   Pending totals. They are tracked per Item Name and are issueable the
+   moment they're added. */
+function renderReuseHistory(){
+  const tbody = document.getElementById('reuse-history-table');
+  if(!tbody) return;
+  const rows = [...DB.reuses].sort((a,b)=>(b.date||'').localeCompare(a.date||'') || b.id.localeCompare(a.id));
+  tbody.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${formatDate(r.date)}</td><td>${escapeHtml(r.item)}</td>
+      <td class="mono">${r.qty}</td><td>${escapeHtml(r.addedByName)||'—'}</td><td>${escapeHtml(r.remarks)||'—'}</td>
+    </tr>`).join('') || `<tr class="empty-row"><td colspan="5">No re-used bags recorded yet.</td></tr>`;
+}
+function openReuseModal(){
+  if(!canEditPO()){ alert('Access Denied — Purchase Order editing is currently restricted for your account.'); return; }
+  document.getElementById('reuse-alert').style.display='none';
+  populateItemSelect('reuse-item-select', DB.itemNames[0]);
+  document.getElementById('reuse-qty').value = '';
+  document.getElementById('reuse-remarks').value = '';
+  document.getElementById('reuse-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('reuse-modal-overlay').classList.add('open');
+}
+function closeReuseModal(){
+  document.getElementById('reuse-modal-overlay').classList.remove('open');
+}
+document.getElementById('reuse-add-btn').addEventListener('click', openReuseModal);
+document.getElementById('reuse-modal-close').addEventListener('click', closeReuseModal);
+document.getElementById('reuse-cancel-btn').addEventListener('click', closeReuseModal);
+document.getElementById('reuse-modal-overlay').addEventListener('click', function(e){
+  if(e.target === this) closeReuseModal();
+});
+document.getElementById('reuse-item-select').addEventListener('change', handleAddNewItemChange);
+document.getElementById('reuse-save-btn').addEventListener('click', function(){
+  if(!canEditPO()){ alert('Access Denied — Purchase Order editing is currently restricted for your account.'); return; }
+  const alertBox = document.getElementById('reuse-alert');
+  alertBox.style.display='none';
+  const itemSel = document.getElementById('reuse-item-select');
+  const item = itemSel.value;
+  const qtyRaw = document.getElementById('reuse-qty').value;
+  const qty = Number(qtyRaw);
+  const date = document.getElementById('reuse-date').value;
+  const remarks = document.getElementById('reuse-remarks').value.trim();
+
+  if(!item || item === '__add_new__' || !DB.itemNames.includes(item)){
+    alertBox.textContent = 'Please select a valid Item Name.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(qtyRaw==='' || !Number.isFinite(qty) || !Number.isInteger(qty)){
+    alertBox.textContent = 'Re-used Bags quantity must be a whole number.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(qty <= 0){
+    alertBox.textContent = 'Re-used Bags quantity must be greater than 0.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(!date){
+    alertBox.textContent = 'Please select a date.';
+    alertBox.style.display='flex';
+    return;
+  }
+
+  const id = 'REUSE-' + String(DB.nextReuseNum).padStart(4,'0');
+  DB.nextReuseNum++;
+  DB.reuses.push({
+    id, item, qty, date, remarks,
+    addedByUserId: currentUser ? currentUser.id : null,
+    addedByName: currentUser ? currentUser.name : 'Unknown',
+  });
+  // Re-used bags do NOT require Quality Approval and are not linked to any
+  // PO or counted in PO Approved/Rejected/Pending — they simply become part
+  // of that item's independent Re-used stock pool, immediately issueable.
+  saveDB();
+  closeReuseModal();
+  renderAll();
+});
+
+/* ============ RENDER: DEPARTMENT REQUEST ============ */
+function populateRequestForm(){
+  const sel = document.getElementById('req-dept');
+  if(!sel) return;
+  const chosen = sel.value;
+  const activeDepts = (DB.departments||[]).filter(d=>d.active);
+  sel.innerHTML = '<option value="">Select department</option>'
+    + activeDepts.map(d=>`<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+  if(activeDepts.some(d=>d.name===chosen)) sel.value = chosen;
+}
+
+document.getElementById('request-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const dept = document.getElementById('req-dept').value;
+  const qty = parseInt(document.getElementById('req-qty').value,10);
+  const remarks = document.getElementById('req-remarks').value.trim();
+  const errBox = document.getElementById('req-error');
+  const okBox = document.getElementById('req-success');
+  okBox.style.display='none'; errBox.style.display='none';
+
+  if(!dept || !qty || qty < 1){
+    errBox.textContent = 'Please select a department and enter a valid quantity.';
+    errBox.style.display='flex';
+    return;
+  }
+  const id = 'REQ-' + String(DB.nextReqNum).padStart(4,'0');
+  DB.nextReqNum++;
+  DB.requests.push({
+    id, dept, qty, remarks, status:'Pending', date: new Date().toISOString().slice(0,10),
+    userId: currentUser ? currentUser.id : null,
+    username: currentUser ? currentUser.username : null,
+    userName: currentUser ? currentUser.name : 'Unknown',
+  });
+  saveDB();
+  okBox.textContent = `Request ${id} submitted successfully and is now pending issue.`;
+  okBox.style.display='flex';
+  this.reset();
+  renderAll();
+});
+
+/* ============ RENDER: ISSUE MANAGEMENT ============ */
+function renderIssueManagement(){
+  const rows = DB.requests.filter(r=> r.status==='Pending');
+  // Approved PO Stock and Re-used Stock are offered as separate, individually
+  // selectable sources — never pre-combined — so the warehouse user picks
+  // exactly which pool a request is issued from.
+  const approvedPOs = DB.pos.filter(p=>approvedAvailableForPO(p)>0);
+  const reusedItems = Array.from(new Set(DB.reuses.map(r=>r.item)))
+    .filter(item=>reusedAvailableForItem(item)>0)
+    .sort((a,b)=>a.localeCompare(b));
+  const sourceOptionsHtml = '<option value="">Select Source</option>'
+    + (approvedPOs.length ? `<optgroup label="Approved PO Stock">` + approvedPOs.map(p=>
+        `<option value="PO::${escapeHtml(p.po)}">${escapeHtml(p.po)} — ${escapeHtml(p.name)} — ${approvedAvailableForPO(p)} Bags Approved</option>`
+      ).join('') + `</optgroup>` : '')
+    + (reusedItems.length ? `<optgroup label="Re-used Stock">` + reusedItems.map(item=>
+        `<option value="REUSED::${escapeHtml(item)}">${escapeHtml(item)} — ${reusedAvailableForItem(item)} Bags Re-used</option>`
+      ).join('') + `</optgroup>` : '');
+  document.getElementById('issue-table').innerHTML = rows.map(r=>{
+    return `<tr>
+      <td class="po-link">${escapeHtml(r.id)}</td><td>${escapeHtml(r.dept)}</td>
+      <td class="mono">${r.qty}</td>
+      <td>
+        <select class="issue-po-select" data-id="${r.id}" style="padding:8px 10px;border-radius:8px;border:1.5px solid var(--slate-200);font-size:12.5px;min-width:260px;">${sourceOptionsHtml}</select>
+        <div class="stock-preview" id="issue-preview-${r.id}"></div>
+      </td>
+      <td><span class="status-pill ${r.status}">${r.status}</span></td>
+      <td>
+        <button class="action-btn issue" data-act="issue" data-id="${r.id}">Issue</button>
+        <button class="action-btn reject" data-act="reject" data-id="${r.id}">Reject</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="6">No requests awaiting action.</td></tr>`;
+
+  document.querySelectorAll('#issue-table [data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleIssueAction(btn.dataset.act, btn.dataset.id));
+  });
+  document.querySelectorAll('#issue-table .issue-po-select').forEach(sel=>{
+    sel.addEventListener('change', ()=>updateIssuePreview(sel.dataset.id));
+  });
+}
+
+// Parses a source-select value into either {type:'po', po} or
+// {type:'reused', item}. Returns null for the empty placeholder option.
+function parseIssueSourceValue(value){
+  if(!value) return null;
+  if(value.startsWith('PO::')) return {type:'po', po: value.slice(4)};
+  if(value.startsWith('REUSED::')) return {type:'reused', item: value.slice(8)};
+  return null;
+}
+
+function updateIssuePreview(reqId){
+  const req = DB.requests.find(r=>r.id===reqId);
+  const sel = document.querySelector(`.issue-po-select[data-id="${reqId}"]`);
+  const box = document.getElementById(`issue-preview-${reqId}`);
+  if(!req || !sel || !box) return;
+  const source = parseIssueSourceValue(sel.value);
+  if(!source){ box.style.display='none'; box.innerHTML=''; return; }
+
+  let avail, label;
+  if(source.type==='po'){
+    const p = poByNumber(source.po);
+    if(!p){ box.style.display='none'; box.innerHTML=''; return; }
+    avail = approvedAvailableForPO(p);
+    label = `Approved PO Stock (${p.po})`;
+  } else {
+    avail = reusedAvailableForItem(source.item);
+    label = `Re-used Stock (${source.item})`;
+  }
+  const remaining = avail - req.qty;
+  box.style.display='block';
+  box.innerHTML = `${label}: <strong>${avail} Bags Available</strong> · Requesting: <strong>${req.qty} Bags</strong><br>`
+    + (remaining>=0
+      ? `Remaining after issue: <strong>${remaining} Bags</strong>`
+      : `<span style="color:var(--red-600);font-weight:700;">Insufficient Stock Available</span>`);
+}
+
+function handleIssueAction(act, id){
+  const req = DB.requests.find(r=>r.id===id);
+  const errBox = document.getElementById('issue-error');
+  errBox.style.display='none';
+  if(!req) return;
+
+  if(act==='reject'){
+    req.status = 'Rejected';
+  } else if(act==='issue'){
+    const sel = document.querySelector(`.issue-po-select[data-id="${id}"]`);
+    const source = sel ? parseIssueSourceValue(sel.value) : null;
+    if(!source){
+      errBox.textContent = 'Please select a source (Approved PO Stock or Re-used Stock) before issuing.';
+      errBox.style.display='flex';
+      return;
+    }
+
+    if(source.type==='po'){
+      const p = poByNumber(source.po);
+      if(!p){
+        errBox.textContent = 'Selected PO could not be found.';
+        errBox.style.display='flex';
+        return;
+      }
+      const avail = approvedAvailableForPO(p);
+      if(req.qty > avail){
+        errBox.textContent = 'Insufficient Stock Available';
+        errBox.style.display='flex';
+        return;
+      }
+      req.status = 'Issued';
+      req.po = p.po;
+      DB.issues.push({
+        reqId:req.id, dept:req.dept, po:p.po, item:p.name, qty:req.qty,
+        fromApproved: req.qty, fromReused: 0,
+        issuedByUserId: currentUser ? currentUser.id : null,
+        issuedByUsername: currentUser ? currentUser.username : null,
+        issuedByName: currentUser ? currentUser.name : 'Unknown',
+        issueDate:new Date().toISOString().slice(0,10)
+      });
+    } else {
+      const avail = reusedAvailableForItem(source.item);
+      if(req.qty > avail){
+        errBox.textContent = 'Insufficient Stock Available';
+        errBox.style.display='flex';
+        return;
+      }
+      req.status = 'Issued';
+      req.po = null; // Re-used Stock is never linked to a Purchase Order.
+      DB.issues.push({
+        reqId:req.id, dept:req.dept, po:null, item:source.item, qty:req.qty,
+        fromApproved: 0, fromReused: req.qty,
+        issuedByUserId: currentUser ? currentUser.id : null,
+        issuedByUsername: currentUser ? currentUser.username : null,
+        issuedByName: currentUser ? currentUser.name : 'Unknown',
+        issueDate:new Date().toISOString().slice(0,10)
+      });
+    }
+  }
+  saveDB();
+  renderAll();
+}
+
+/* ============ RENDER: REQUEST HISTORY ============ */
+function populateDeptFilterDropdown(){
+  const sel = document.getElementById('hist-dept-filter');
+  if(!sel) return;
+  const chosen = sel.value;
+  sel.innerHTML = '<option value="">All Departments</option>'
+    + (DB.departments||[]).map(d=>`<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+  sel.value = chosen;
+}
+function renderRequestHistory(){
+  const statusF = document.getElementById('hist-status-filter').value;
+  const deptF = document.getElementById('hist-dept-filter').value;
+  const searchF = document.getElementById('hist-search').value.toLowerCase();
+  const rows = [...DB.requests].sort((a,b)=>b.id.localeCompare(a.id)).filter(r=>
+    (!statusF || r.status===statusF) &&
+    (!deptF || r.dept===deptF) &&
+    (!searchF || r.id.toLowerCase().includes(searchF) || (r.po||'').toLowerCase().includes(searchF))
+  );
+  document.getElementById('reqhistory-table').innerHTML = rows.map(r=>`
+    <tr>
+      <td class="po-link">${escapeHtml(r.id)}</td><td>${escapeHtml(r.userName)||'—'}</td><td>${escapeHtml(r.dept)}</td><td>${escapeHtml(r.po)||'—'}</td><td class="mono">${r.qty}</td>
+      <td>${escapeHtml(r.remarks)||'—'}</td><td><span class="status-pill ${r.status}">${r.status}</span></td><td>${formatDate(r.date)}</td>
+    </tr>`).join('') || `<tr class="empty-row"><td colspan="8">No requests yet.</td></tr>`;
+}
+['hist-status-filter','hist-dept-filter','hist-search'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderRequestHistory);
+  document.getElementById(id).addEventListener('change', renderRequestHistory);
+});
+
+/* ============ RENDER: ISSUE HISTORY ============ */
+// Describes which stock pool(s) an issue was drawn from — Approved PO
+// Stock, Re-used Stock, or a split of both. Legacy issue records saved
+// before this split existed have no fromApproved/fromReused fields, and are
+// shown as Approved PO Stock (their original, pre-reused-stock behavior).
+function issueSourceLabel(i){
+  const hasSplit = typeof i.fromApproved === 'number' || typeof i.fromReused === 'number';
+  if(!hasSplit) return '🟢 Approved PO Stock';
+  const fromApproved = i.fromApproved||0, fromReused = i.fromReused||0;
+  if(fromApproved>0 && fromReused>0) return `🟢🔁 Both (${fromApproved} Approved + ${fromReused} Re-used)`;
+  if(fromReused>0) return '🔁 Re-used Stock';
+  return '🟢 Approved PO Stock';
+}
+function renderIssueHistory(){
+  const rows = [...DB.issues].sort((a,b)=>(b.issueDate||'').localeCompare(a.issueDate||''));
+  document.getElementById('issuehistory-table').innerHTML = rows.map(i=>`
+    <tr>
+      <td class="po-link">${escapeHtml(i.reqId)}</td><td>${escapeHtml(i.dept)}</td><td>${i.po ? escapeHtml(i.po) : '<span style="color:var(--slate-400);">— (Re-used)</span>'}</td><td>${escapeHtml(i.item)}</td>
+      <td class="mono">${i.qty}</td><td style="font-size:11.5px;">${issueSourceLabel(i)}</td><td>${escapeHtml(i.issuedByName)||'—'}</td><td>${formatDate(i.issueDate)}</td>
+    </tr>`).join('') || `<tr class="empty-row"><td colspan="8">No bags issued yet.</td></tr>`;
+}
+
+/* ============ SETTINGS ============ */
+document.querySelectorAll('.switch[data-toggle]').forEach(sw=>{
+  sw.addEventListener('click', ()=> sw.classList.toggle('on'));
+});
+document.getElementById('reset-data-btn').addEventListener('click', ()=>{
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  if(confirm('Clear all PO stock, department requests, issue history and re-used bag records? Member accounts are kept. This cannot be undone.')){
+    DB.pos = [];
+    DB.requests = [];
+    DB.issues = [];
+    DB.reuses = [];
+    DB.qualityHistory = [];
+    DB.itemNames = [DEFAULT_ITEM_NAME];
+    DB.nextReqNum = 1;
+    DB.nextReuseNum = 1;
+    DB.nextQualityNum = 1;
+    saveDB();
+    populateItemNameDropdown(DEFAULT_ITEM_NAME);
+    renderAll();
+    goPage('dashboard');
+  }
+});
+
+/* ============ DEPARTMENT MANAGEMENT (Admin only) ============ */
+function renderDeptList(){
+  const wrap = document.getElementById('dept-list');
+  if(!wrap) return;
+  if(!isAdmin()){
+    wrap.innerHTML = '<div class="dept-row">Unauthorized.</div>';
+    return;
+  }
+  wrap.innerHTML = (DB.departments||[]).map(d=>`
+    <div class="dept-row">
+      <span class="dept-name">${escapeHtml(d.name)} ${d.active?'<span class="status-pill Active">Active</span>':'<span class="status-pill Inactive">Inactive</span>'}</span>
+      <span class="dept-actions">
+        <button type="button" class="action-btn issue" data-dept-act="edit" data-name="${escapeHtml(d.name)}">Edit</button>
+        <button type="button" class="action-btn warn" data-dept-act="toggle" data-name="${escapeHtml(d.name)}">${d.active?'Deactivate':'Activate'}</button>
+        <button type="button" class="action-btn reject" data-dept-act="delete" data-name="${escapeHtml(d.name)}">Delete</button>
+      </span>
+    </div>`).join('') || '<div class="dept-row">No departments yet.</div>';
+
+  wrap.querySelectorAll('[data-dept-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const act = btn.dataset.deptAct, name = btn.dataset.name;
+      if(act==='edit') startEditDept(name);
+      else if(act==='toggle') toggleDeptActive(name);
+      else if(act==='delete') deleteDept(name);
+    });
+  });
+}
+function refreshDeptDependents(){
+  populateRequestForm();
+  populateDeptFilterDropdown();
+  drawDeptChart();
+}
+function startEditDept(name){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const d = DB.departments.find(x=>x.name===name);
+  if(!d) return;
+  document.getElementById('dept-edit-name').value = d.name;
+  document.getElementById('dept-name-input').value = d.name;
+  document.getElementById('dept-submit-btn').textContent = 'Update Department';
+  document.getElementById('dept-cancel-edit').style.display = 'inline-block';
+}
+function resetDeptForm(){
+  document.getElementById('dept-form').reset();
+  document.getElementById('dept-edit-name').value = '';
+  document.getElementById('dept-submit-btn').textContent = 'Add Department';
+  document.getElementById('dept-cancel-edit').style.display = 'none';
+  document.getElementById('dept-alert').style.display = 'none';
+}
+document.getElementById('dept-cancel-edit').addEventListener('click', resetDeptForm);
+function toggleDeptActive(name){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const d = DB.departments.find(x=>x.name===name);
+  if(!d) return;
+  d.active = !d.active;
+  saveDB();
+  renderDeptList();
+  refreshDeptDependents();
+}
+function deleteDept(name){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  if(!confirm(`Delete department "${name}"? This cannot be undone.`)) return;
+  DB.departments = DB.departments.filter(x=>x.name!==name);
+  saveDB();
+  renderDeptList();
+  refreshDeptDependents();
+}
+document.getElementById('dept-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const alertBox = document.getElementById('dept-alert');
+  alertBox.style.display='none';
+  const editName = document.getElementById('dept-edit-name').value;
+  const name = document.getElementById('dept-name-input').value.trim();
+  if(!name){
+    alertBox.textContent = 'Department name cannot be empty.';
+    alertBox.style.display='flex';
+    return;
+  }
+  const dupe = DB.departments.find(d => d.name.toLowerCase()===name.toLowerCase() && d.name !== editName);
+  if(dupe){
+    alertBox.textContent = 'This department name already exists.';
+    alertBox.style.display='flex';
+    return;
+  }
+  if(editName){
+    const d = DB.departments.find(x=>x.name===editName);
+    if(d) d.name = name;
+    // Keep existing requests / requests-in-progress referencing the old name in sync.
+    DB.requests.forEach(r=>{ if(r.dept===editName) r.dept = name; });
+    DB.issues.forEach(i=>{ if(i.dept===editName) i.dept = name; });
+  } else {
+    DB.departments.push({name, active:true});
+  }
+  saveDB();
+  resetDeptForm();
+  renderDeptList();
+  refreshDeptDependents();
+});
+
+/* ============ MEMBER MANAGEMENT (Admin only) ============ */
+function updatePermRowUI(cb){
+  const row = cb.closest('.perm-row');
+  if(!row) return;
+  const statusEl = row.querySelector('.perm-status');
+  if(cb.checked){
+    row.classList.add('checked');
+    statusEl.textContent = 'Allowed';
+    statusEl.classList.remove('notallowed'); statusEl.classList.add('allowed');
+  } else {
+    row.classList.remove('checked');
+    statusEl.textContent = 'Not Allowed';
+    statusEl.classList.remove('allowed'); statusEl.classList.add('notallowed');
+  }
+}
+// "Add / Update Purchase Order" and "PO Quality Management" are only
+// meaningful when "PO Stock Management" itself is enabled — grey them out
+// and force them off whenever the parent permission is off.
+const SUB_PERMISSIONS = {poStock: ['poEdit','poQuality']};
+function applyPermDependencies(){
+  Object.keys(SUB_PERMISSIONS).forEach(parentKey=>{
+    const parentCb = document.getElementById('perm-'+parentKey);
+    if(!parentCb) return;
+    const parentEnabled = parentCb.checked && !parentCb.disabled;
+    SUB_PERMISSIONS[parentKey].forEach(childKey=>{
+      const childCb = document.getElementById('perm-'+childKey);
+      if(!childCb) return;
+      if(!parentEnabled && childCb.checked){ childCb.checked = false; updatePermRowUI(childCb); }
+      const row = childCb.closest('.perm-row');
+      childCb.disabled = childCb.disabled || false; // role-level disabling handled separately
+      if(row) row.style.opacity = parentEnabled ? '1' : '.45';
+      childCb.disabled = !parentEnabled || childCb.dataset.roleDisabled === '1';
+    });
+  });
+}
+function setPermissionCheckboxes(permissions){
+  PERMISSION_KEYS.forEach(key=>{
+    const cb = document.getElementById('perm-'+key);
+    if(!cb) return;
+    cb.checked = !!(permissions && permissions[key]);
+    updatePermRowUI(cb);
+  });
+  applyPermDependencies();
+}
+function getPermissionCheckboxes(){
+  const permissions = {};
+  PERMISSION_KEYS.forEach(key=>{
+    const cb = document.getElementById('perm-'+key);
+    permissions[key] = !!(cb && cb.checked);
+  });
+  return permissions;
+}
+function updatePermissionUIForRole(){
+  const role = document.getElementById('member-role').value;
+  const isAdminRole = role === 'Admin';
+  document.getElementById('member-admin-note').style.display = isAdminRole ? 'block' : 'none';
+  document.getElementById('member-perm-grid').style.opacity = isAdminRole ? '.5' : '1';
+  document.getElementById('member-perm-toolbar').style.display = isAdminRole ? 'none' : 'flex';
+  document.querySelectorAll('#member-perm-grid input[data-perm]').forEach(cb => {
+    cb.disabled = isAdminRole;
+    cb.dataset.roleDisabled = isAdminRole ? '1' : '0';
+  });
+  applyPermDependencies();
+}
+document.getElementById('member-role').addEventListener('change', updatePermissionUIForRole);
+document.querySelectorAll('#member-perm-grid input[data-perm]').forEach(cb=>{
+  cb.addEventListener('change', ()=>{ updatePermRowUI(cb); applyPermDependencies(); });
+});
+document.getElementById('perm-select-all').addEventListener('click', ()=>{
+  document.querySelectorAll('#member-perm-grid input[data-perm]').forEach(cb=>{
+    if(!cb.disabled){ cb.checked = true; updatePermRowUI(cb); }
+  });
+  applyPermDependencies();
+});
+document.getElementById('perm-clear-all').addEventListener('click', ()=>{
+  document.querySelectorAll('#member-perm-grid input[data-perm]').forEach(cb=>{
+    if(!cb.disabled){ cb.checked = false; updatePermRowUI(cb); }
+  });
+  applyPermDependencies();
+});
+function permissionSummary(member){
+  if(member.role === 'Admin') return '<span class="access-chip full">Full Access (Admin)</span>';
+  const perms = member.permissions || {};
+  const allowed = PERMISSION_KEYS.filter(k=>perms[k]);
+  if(allowed.length === 0) return '<span class="access-chip none">No Access</span>';
+  return allowed.map(k=>`<span class="access-chip">${escapeHtml(PERMISSION_LABELS[k])}</span>`).join('');
+}
+
+function resetMemberForm(){
+  document.getElementById('member-form').reset();
+  document.getElementById('member-edit-id').value = '';
+  document.getElementById('member-form-title').textContent = 'Add New Member';
+  document.getElementById('member-submit-btn').textContent = 'Add Member';
+  document.getElementById('member-cancel-edit').style.display = 'none';
+  document.getElementById('member-password-hint').textContent = 'Password is required for new members.';
+  document.getElementById('member-status').value = 'active';
+  setPermissionCheckboxes(defaultPermissions(false));
+  updatePermissionUIForRole();
+  const alertBox = document.getElementById('member-alert');
+  const okBox = document.getElementById('member-success');
+  if(alertBox) alertBox.style.display = 'none';
+  if(okBox) okBox.style.display = 'none';
+}
+document.getElementById('member-cancel-edit').addEventListener('click', resetMemberForm);
+
+function renderMembers(filter){
+  // Authorization check: never render member data for non-admin users, even
+  // if this function is somehow triggered outside the normal nav flow.
+  if(!isAdmin()){
+    const tbody = document.getElementById('member-table');
+    if(tbody) tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Unauthorized.</td></tr>`;
+    return;
+  }
+  filter = (filter||'').toLowerCase();
+  const rows = DB.members.filter(m =>
+    !filter || m.name.toLowerCase().includes(filter) || m.username.toLowerCase().includes(filter)
+  );
+  document.getElementById('member-table').innerHTML = rows.map(m=>{
+    let statusBadge;
+    if(m.locked) statusBadge = `<span class="status-pill Rejected">🔴 Locked</span>`;
+    else if(m.active) statusBadge = `<span class="status-pill Active">🟢 Active</span>`;
+    else statusBadge = `<span class="status-pill Neutral">⚪ Inactive</span>`;
+    return `
+    <tr>
+      <td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.username)}</td><td>${escapeHtml(m.role)}</td>
+      <td>${statusBadge}</td>
+      <td>${permissionSummary(m)}</td>
+      <td>
+        <button class="action-btn issue" data-act="edit" data-id="${m.id}">Edit</button>
+        <button class="action-btn warn" data-act="toggle" data-id="${m.id}">${m.active?'Deactivate':'Activate'}</button>
+        <button class="action-btn neutral" data-act="resetpw" data-id="${m.id}">Reset Password</button>
+        ${m.locked ? `<button class="action-btn issue" data-act="unlock" data-id="${m.id}">Unlock Account</button>` : ''}
+        <button class="action-btn reject" data-act="delete" data-id="${m.id}">Delete</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="6">No members found.</td></tr>`;
+
+  document.querySelectorAll('#member-table [data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const act = btn.dataset.act, id = btn.dataset.id;
+      if(act==='edit') startEditMember(id);
+      else if(act==='toggle') toggleMemberActive(id);
+      else if(act==='resetpw') resetMemberPassword(id);
+      else if(act==='delete') deleteMember(id);
+      else if(act==='unlock') unlockMember(id);
+    });
+  });
+}
+document.getElementById('member-search').addEventListener('input', e=>renderMembers(e.target.value));
+
+function unlockMember(id){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const m = DB.members.find(mm=>mm.id===id);
+  if(!m) return;
+  m.locked = false;
+  m.failedAttempts = 0;
+  saveDB();
+  renderMembers(document.getElementById('member-search').value);
+}
+
+function startEditMember(id){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const m = DB.members.find(mm=>mm.id===id);
+  if(!m) return;
+  document.getElementById('member-edit-id').value = m.id;
+  document.getElementById('member-name').value = m.name;
+  document.getElementById('member-username').value = m.username;
+  document.getElementById('member-password').value = '';
+  document.getElementById('member-role').value = m.role;
+  document.getElementById('member-status').value = m.active ? 'active' : 'inactive';
+  document.getElementById('member-form-title').textContent = `Edit Member — ${m.name}`;
+  document.getElementById('member-submit-btn').textContent = 'Update Member';
+  document.getElementById('member-password-hint').textContent = 'Leave blank to keep the current password.';
+  document.getElementById('member-cancel-edit').style.display = 'inline-block';
+  setPermissionCheckboxes(m.permissions || defaultPermissions(m.role === 'Admin'));
+  updatePermissionUIForRole();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleMemberActive(id){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const m = DB.members.find(mm=>mm.id===id);
+  if(!m) return;
+  if(currentUser && currentUser.id === id && m.active){
+    alert('You cannot deactivate the account you are currently logged in with.');
+    return;
+  }
+  m.active = !m.active;
+  saveDB();
+  renderMembers(document.getElementById('member-search').value);
+}
+
+function resetMemberPassword(id){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const m = DB.members.find(mm=>mm.id===id);
+  if(!m) return;
+  const newPass = prompt(`Enter a new password for ${m.name}:`);
+  if(newPass === null) return;
+  if(!newPass.trim()){ alert('Password cannot be empty.'); return; }
+  const confirmPass = prompt('Confirm the new password:');
+  if(confirmPass === null) return;
+  if(newPass !== confirmPass){ alert('Passwords do not match. Password was not changed.'); return; }
+  m.password = newPass;
+  saveDB();
+  alert(`Password for ${m.name} has been updated successfully.`);
+}
+
+function deleteMember(id){
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const m = DB.members.find(mm=>mm.id===id);
+  if(!m) return;
+  if(currentUser && currentUser.id === id){
+    alert('You cannot delete the account you are currently logged in with.');
+    return;
+  }
+  if(!confirm(`Delete member "${m.name}"? This cannot be undone.`)) return;
+  DB.members = DB.members.filter(mm=>mm.id!==id);
+  saveDB();
+  renderMembers(document.getElementById('member-search').value);
+}
+
+document.getElementById('member-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  if(!isAdmin()){ alert('Unauthorized: Admin access required.'); return; }
+  const alertBox = document.getElementById('member-alert');
+  const okBox = document.getElementById('member-success');
+  alertBox.style.display='none'; okBox.style.display='none';
+
+  const editId = document.getElementById('member-edit-id').value;
+  const name = document.getElementById('member-name').value.trim();
+  const username = document.getElementById('member-username').value.trim();
+  const password = document.getElementById('member-password').value;
+  const role = document.getElementById('member-role').value;
+  const active = document.getElementById('member-status').value === 'active';
+
+  if(!name || !username){
+    alertBox.textContent = 'Full Name and Username are required.';
+    alertBox.style.display='flex';
+    return;
+  }
+  const dupe = DB.members.find(m => m.username.toLowerCase()===username.toLowerCase() && m.id !== editId);
+  if(dupe){
+    alertBox.textContent = 'This username is already taken.';
+    alertBox.style.display='flex';
+    return;
+  }
+
+  // Guard: an Admin editing their own account can never demote or
+  // deactivate themselves out of Admin access.
+  if(editId && currentUser && currentUser.id === editId){
+    const existing = DB.members.find(mm=>mm.id===editId);
+    if(existing && existing.role === 'Admin' && (role !== 'Admin' || !active)){
+      alertBox.textContent = 'You cannot remove your own Admin role or deactivate your own account.';
+      alertBox.style.display='flex';
+      return;
+    }
+  }
+
+  const permissions = getPermissionCheckboxes();
+
+  if(editId){
+    const m = DB.members.find(mm=>mm.id===editId);
+    if(!m){ alertBox.textContent='Member not found.'; alertBox.style.display='flex'; return; }
+    m.name = name; m.username = username; m.role = role; m.active = active;
+    m.permissions = permissions;
+    if(password) m.password = password;
+    okBox.textContent = `Member "${name}" updated successfully.`;
+  } else {
+    if(!password){
+      alertBox.textContent = 'Password is required for new members.';
+      alertBox.style.display='flex';
+      return;
+    }
+    const id = 'M' + String(Date.now()).slice(-6) + Math.floor(Math.random()*100);
+    DB.members.push({id, name, username, password, role, active, permissions, failedAttempts:0, locked:false});
+    okBox.textContent = `Member "${name}" added successfully.`;
+  }
+  saveDB();
+  okBox.style.display='flex';
+  resetMemberForm();
+  renderMembers();
+  if(currentUser && editId === currentUser.id){
+    // If the logged-in user edited their own record, refresh nav visibility
+    // immediately in case their own permissions changed.
+    applyRoleVisibility();
+  }
+});
+
+/* ============ REPORTS / PDF GENERATION ============ */
+let jsPDFLoadPromise = null;
+function loadScript(src){
+  return new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('Failed to load '+src));
+    document.head.appendChild(s);
+  });
+}
+// jsPDF is loaded lazily (only when Reports is first opened) and only from
+// one CDN, with a fallback to a second CDN if the first is blocked —
+// avoids depending on a single external host being reachable.
+function ensureJsPDFLoaded(){
+  if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+  if(jsPDFLoadPromise) return jsPDFLoadPromise;
+  jsPDFLoadPromise = loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    .catch(()=> loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'))
+    .catch(err => { jsPDFLoadPromise = null; throw err; });
+  return jsPDFLoadPromise;
+}
+
+document.getElementById('report-type').addEventListener('change', function(){
+  const weekly = this.value === 'weekly';
+  document.getElementById('report-week-field').style.display = weekly ? 'block' : 'none';
+  document.getElementById('report-month-field').style.display = weekly ? 'none' : 'block';
+});
+
+function isoWeekToRange(weekStr){
+  // weekStr like "2026-W39" (HTML <input type="week"> format)
+  const [yearStr, weekPart] = weekStr.split('-W');
+  const year = parseInt(yearStr,10), week = parseInt(weekPart,10);
+  const simple = new Date(Date.UTC(year,0,1 + (week-1)*7));
+  const dow = simple.getUTCDay() || 7; // Monday=1 ... Sunday=7
+  const monday = new Date(simple); monday.setUTCDate(simple.getUTCDate() - dow + 1);
+  const sunday = new Date(monday); sunday.setUTCDate(monday.getUTCDate() + 6);
+  return {start: monday, end: sunday};
+}
+function monthToRange(monthStr){
+  // monthStr like "2026-09"
+  const [y,m] = monthStr.split('-').map(Number);
+  const start = new Date(Date.UTC(y, m-1, 1));
+  const end = new Date(Date.UTC(y, m, 0));
+  return {start, end};
+}
+function isoDate(d){ return d.toISOString().slice(0,10); }
+function prettyDate(d){
+  return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric', timeZone:'UTC'});
+}
+function inRange(dateStr, startStr, endStr){
+  return !!dateStr && dateStr >= startStr && dateStr <= endStr;
+}
+
+/* --- Low-level PDF table drawer (no autoTable dependency) --- */
+function pdfNewPageIfNeeded(doc, y, needed, margin, pageH){
+  if(y + needed > pageH - margin){
+    doc.addPage();
+    return margin + 10;
+  }
+  return y;
+}
+function pdfSectionTitle(doc, text, x, y, pageW, margin, pageH){
+  y = pdfNewPageIfNeeded(doc, y, 28, margin, pageH);
+  doc.setFillColor(11,28,61);
+  doc.rect(x, y, pageW - margin*2, 22, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.text(text, x+8, y+15);
+  doc.setTextColor(20,20,20);
+  return y + 22 + 10;
+}
+function pdfTable(doc, {x, y, colWidths, headers, rows, margin, pageW, pageH, fontSize}){
+  fontSize = fontSize || 8.5;
+  const rowH = 18;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(fontSize);
+  y = pdfNewPageIfNeeded(doc, y, rowH*2, margin, pageH);
+  const drawHeader = (yy)=>{
+    doc.setFillColor(37,99,235);
+    doc.rect(x, yy, colWidths.reduce((a,b)=>a+b,0), rowH, 'F');
+    doc.setTextColor(255,255,255);
+    let cx = x;
+    headers.forEach((h,i)=>{ doc.text(String(h), cx+4, yy+12); cx += colWidths[i]; });
+    doc.setTextColor(20,20,20);
+    return yy + rowH;
+  };
+  y = drawHeader(y);
+  doc.setFont('helvetica','normal');
+  rows.forEach((row, ri)=>{
+    y = pdfNewPageIfNeeded(doc, y, rowH, margin, pageH);
+    if(y === margin+10) y = drawHeader(y); // fresh page: repeat header
+    if(ri % 2 === 1){
+      doc.setFillColor(244,246,250);
+      doc.rect(x, y, colWidths.reduce((a,b)=>a+b,0), rowH, 'F');
+    }
+    let cx = x;
+    row.forEach((cell,i)=>{
+      const txt = String(cell==null?'—':cell);
+      doc.text(txt.length>40?txt.slice(0,38)+'…':txt, cx+4, y+12);
+      cx += colWidths[i];
+    });
+    y += rowH;
+  });
+  if(rows.length===0){
+    doc.setFont('helvetica','italic');
+    doc.text('No records for this period.', x+4, y+12);
+    doc.setFont('helvetica','normal');
+    y += rowH;
+  }
+  return y + 14;
+}
+function pdfKpiBoxes(doc, boxes, x, y, pageW, margin){
+  const gap = 10;
+  const boxW = (pageW - margin*2 - gap*(boxes.length-1)) / boxes.length;
+  const boxH = 46;
+  boxes.forEach((b,i)=>{
+    const bx = x + i*(boxW+gap);
+    doc.setDrawColor(230,233,240);
+    doc.setFillColor(249,250,252);
+    doc.roundedRect(bx, y, boxW, boxH, 4, 4, 'FD');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(13);
+    doc.setTextColor(11,28,61);
+    doc.text(String(b.value), bx+10, y+22);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90,100,120);
+    doc.text(b.label, bx+10, y+36);
+    doc.setTextColor(20,20,20);
+  });
+  return y + boxH + 16;
+}
+
+function generateReport(){
+  const errBox = document.getElementById('report-alert');
+  errBox.style.display='none';
+  if(!hasPermission('reports')){
+    errBox.textContent = 'Access Denied — you do not have permission to access Reports.';
+    errBox.style.display='flex';
+    return;
+  }
+  const type = document.getElementById('report-type').value;
+  let start, end;
+  if(type==='weekly'){
+    const wk = document.getElementById('report-week').value;
+    if(!wk){ errBox.textContent = 'Please select a week.'; errBox.style.display='flex'; return; }
+    ({start,end} = isoWeekToRange(wk));
+  } else {
+    const mo = document.getElementById('report-month').value;
+    if(!mo){ errBox.textContent = 'Please select a month.'; errBox.style.display='flex'; return; }
+    ({start,end} = monthToRange(mo));
+  }
+  const startStr = isoDate(start), endStr = isoDate(end);
+  const btn = document.getElementById('report-generate-btn');
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generating…'; btn.disabled = true;
+
+  ensureJsPDFLoaded().then(()=>{
+    buildReportPDF(type, start, end, startStr, endStr);
+    btn.textContent = originalLabel; btn.disabled = false;
+  }).catch(()=>{
+    errBox.textContent = 'The PDF library could not be loaded — please check your internet connection and try again.';
+    errBox.style.display='flex';
+    btn.textContent = originalLabel; btn.disabled = false;
+  });
+}
+document.getElementById('report-generate-btn').addEventListener('click', generateReport);
+
+function buildReportPDF(type, start, end, startStr, endStr){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 34;
+  let y = margin;
+
+  const posInPeriod = DB.pos.filter(p => inRange(p.receivedDate, startStr, endStr));
+  const requestsInPeriod = DB.requests.filter(r => inRange(r.date, startStr, endStr));
+  const issuesInPeriod = DB.issues.filter(i => inRange(i.issueDate, startStr, endStr));
+  const reusesInPeriod = DB.reuses.filter(r => inRange(r.date, startStr, endStr));
+  const qualityUpdatesInPeriod = DB.pos.filter(p => p.qualityUpdatedAt && inRange(p.qualityUpdatedAt.slice(0,10), startStr, endStr));
+
+  const totalPOs = DB.pos.length;
+  const totalBags = DB.pos.reduce((s,p)=>s+p.totalBags,0);
+  const availBags = totalAvailableBags();
+  const totalReused = DB.reuses.reduce((s,r)=>s+r.qty,0);
+  const totalApproved = DB.pos.reduce((s,p)=>s+(p.approvedBags||0),0);
+  const totalRejected = DB.pos.reduce((s,p)=>s+(p.rejectedBags||0),0);
+  const totalPending = DB.pos.reduce((s,p)=>s+pendingQualityBags(p),0);
+
+  // ---- Header ----
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(11,28,61);
+  doc.text('Greige Bag System', margin, y+8);
+  doc.setFontSize(12); doc.setTextColor(37,99,235);
+  doc.text(type==='weekly' ? 'Weekly Warehouse Report' : 'Monthly Warehouse Report', margin, y+28);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,100,120);
+  doc.text(`Period: ${prettyDate(start)} – ${prettyDate(end)}`, margin, y+44);
+  doc.text(`Generated: ${prettyDate(new Date())}    Generated by: ${currentUser ? currentUser.name : 'Unknown'}`, margin, y+58);
+  doc.setDrawColor(230,233,240);
+  doc.line(margin, y+68, pageW-margin, y+68);
+  y += 82;
+  doc.setTextColor(20,20,20);
+
+  // ---- Executive summary ----
+  y = pdfSectionTitle(doc, 'Executive Summary', margin, y, pageW, margin, pageH);
+  y = pdfKpiBoxes(doc, [
+    {label:'Total POs', value: totalPOs},
+    {label:'Total Bags', value: totalBags},
+    {label:'Available Bags', value: availBags},
+    {label:'Re-used Bags', value: totalReused},
+    {label:'Approved Bags', value: totalApproved},
+    {label:'Rejected Bags', value: totalRejected},
+    {label:'Quality Pending', value: totalPending},
+    {label: type==='weekly'?'Requests (wk)':'Requests (mo)', value: requestsInPeriod.length},
+  ], margin, y, pageW, margin);
+
+  // ---- Department summary ----
+  y = pdfSectionTitle(doc, 'Department Summary', margin, y, pageW, margin, pageH);
+  const deptRows = (DB.departments||[]).map(d=>{
+    const reqs = requestsInPeriod.filter(r=>r.dept===d.name);
+    const issuedBags = issuesInPeriod.filter(i=>i.dept===d.name).reduce((s,i)=>s+i.qty,0);
+    return [
+      d.name,
+      reqs.length,
+      reqs.reduce((s,r)=>s+r.qty,0),
+      issuedBags,
+      reqs.filter(r=>r.status==='Pending').length,
+      reqs.filter(r=>r.status==='Rejected').length,
+    ];
+  });
+  y = pdfTable(doc, {
+    x: margin, y, margin, pageW, pageH,
+    headers: ['Department','No. of Requests','Total Requested Bags','Total Issued Bags','Pending Requests','Rejected Requests'],
+    colWidths: [160,110,140,120,120,120],
+    rows: deptRows,
+  });
+
+  // ---- PO summary ----
+  y = pdfSectionTitle(doc, 'PO Summary (received in period)', margin, y, pageW, margin, pageH);
+  y = pdfTable(doc, {
+    x: margin, y, margin, pageW, pageH,
+    headers: ['PO Number','Item Name','Total Bags','Available Bags','Approved','Rejected','Re-used','Received Date'],
+    colWidths: [80,180,80,90,70,70,70,100],
+    rows: posInPeriod.map(p=>[p.po, p.name, p.totalBags, approvedAvailableForPO(p), p.approvedBags||0, p.rejectedBags||0, reusedTotalForItem(p.name), formatDate(p.receivedDate)]),
+  });
+
+  // ---- Issue summary ----
+  y = pdfSectionTitle(doc, 'Issue Summary', margin, y, pageW, margin, pageH);
+  y = pdfTable(doc, {
+    x: margin, y, margin, pageW, pageH,
+    headers: ['Request ID','Department','PO Number','Item Name','Quantity','Issued By','Issue Date'],
+    colWidths: [90,110,90,190,80,120,100],
+    rows: issuesInPeriod.map(i=>[i.reqId, i.dept, i.po||'— (Re-used)', i.item, i.qty, i.issuedByName||'—', formatDate(i.issueDate)]),
+  });
+
+  // ---- User activity ----
+  y = pdfSectionTitle(doc, 'User Activity', margin, y, pageW, margin, pageH);
+  const activity = [
+    ...requestsInPeriod.map(r=>({date:r.date, type:'Request Created', user:r.userName||'—', detail:`${r.id} — ${r.dept} — ${r.qty} bags`})),
+    ...issuesInPeriod.map(i=>({date:i.issueDate, type:'Issue Performed', user:i.issuedByName||'—', detail:`${i.reqId} — ${i.po||i.item+' (Re-used)'} — ${i.qty} bags`})),
+    ...qualityUpdatesInPeriod.map(p=>({date:p.qualityUpdatedAt.slice(0,10), type:'Quality Updated', user:(p.qualityUpdatedBy&&p.qualityUpdatedBy.name)||'—', detail:`${p.po} — Approved ${p.approvedBags||0}, Rejected ${p.rejectedBags||0}`})),
+    ...reusesInPeriod.map(r=>({date:r.date, type:'Re-used Bags Added', user:r.addedByName||'—', detail:`${r.item} — ${r.qty} bags`})),
+  ].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  y = pdfTable(doc, {
+    x: margin, y, margin, pageW, pageH,
+    headers: ['Date','Activity','User','Details'],
+    colWidths: [90,150,140,390],
+    rows: activity.map(a=>[formatDate(a.date), a.type, a.user, a.detail]),
+  });
+
+  // ---- Page numbers / footer on every page ----
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(140,148,165);
+    doc.text(`Page ${i} of ${pageCount}`, pageW - margin - 60, pageH - 14);
+    doc.text(`Generated by: ${currentUser ? currentUser.name : 'Unknown'} · ${prettyDate(new Date())}`, margin, pageH - 14);
+  }
+
+  const fname = `${type==='weekly'?'Weekly':'Monthly'}_Warehouse_Report_${startStr}_to_${endStr}.pdf`;
+  doc.save(fname);
+}
+
+/* ============ MASTER RENDER ============ */
+function renderAll(){
+  populateDeptFilterDropdown();
+  renderDashboard(document.getElementById('dash-po-search').value);
+  renderPOStock(document.getElementById('postock-search').value);
+  populateItemNameDropdown();
+  populateRequestForm();
+  renderIssueManagement();
+  renderRequestHistory();
+  renderIssueHistory();
+  if(isAdmin()){
+    renderMembers(document.getElementById('member-search').value);
+    renderDeptList();
+  }
+  updateLoginStats();
+}
+
+function boot(){
+  renderAll();
+  tickClock();
+  setInterval(tickClock, 1000*30);
+}
+</script>
+</body>
+</html>
