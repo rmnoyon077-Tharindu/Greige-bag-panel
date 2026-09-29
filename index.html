@@ -358,6 +358,28 @@
   .quality-modal-meta strong{font-size:13.5px;color:var(--slate-900);}
   .quality-pending-line{margin-top:4px;margin-bottom:14px;padding:10px 14px;border-radius:9px;background:var(--orange-100);color:var(--orange-600);font-weight:700;font-size:13px;}
 
+  /* --- v2 additions --- */
+  .kpi-grid.four{grid-template-columns:repeat(4,1fr);}
+  .kpi-card.red{background:linear-gradient(135deg,#f0655f,#c93a34);}
+  .refresh-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;}
+  .refresh-btn:hover{background:rgba(255,255,255,.24);}
+  .refresh-btn:disabled{opacity:.75;cursor:wait;}
+  .refresh-btn svg{width:15px;height:15px;}
+  .refresh-btn.spinning svg{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .refresh-btn.err{background:rgba(224,69,63,.35);border-color:rgba(255,255,255,.4);}
+  .status-pill.QPending{background:var(--orange-100);color:var(--orange-600);}
+  .status-pill.QApproved{background:var(--green-100);color:var(--green-600);}
+  .status-pill.QRejected{background:var(--red-100);color:var(--red-600);}
+  .btn-locked{opacity:.5;cursor:not-allowed !important;}
+  .legend-swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle;}
+  @media(max-width:1100px){
+    .kpi-grid.four{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:560px){
+    .kpi-grid.four{grid-template-columns:1fr;}
+  }
+
   @media(max-width:1100px){
     .app-shell{grid-template-columns:1fr;}
     .sidebar{display:none;}
@@ -454,6 +476,10 @@
         </div>
       </div>
       <div class="topbar-right">
+        <button type="button" class="refresh-btn" id="refresh-system-btn" title="Fetch the latest data from the cloud">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg>
+          <span id="refresh-system-label">Refresh System</span>
+        </button>
         <div class="datetime-chip" id="datetime-chip">📅 -- | --:--</div>
         <div class="profile-chip-wrap" style="position:relative;">
           <div class="profile-chip" id="profile-chip-btn" style="cursor:pointer;">
@@ -481,7 +507,7 @@
           <div><h2>Dashboard</h2><p>Overview of your warehouse operations</p></div>
         </div>
 
-        <div class="kpi-grid">
+        <div class="kpi-grid four">
           <div class="kpi-card blue">
             <div class="kpi-row">
               <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M4 8h16l-1.5 12a2 2 0 01-2 1.8H7.5A2 2 0 015.5 20L4 8z"/></svg></div>
@@ -492,6 +518,12 @@
             <div class="kpi-row">
               <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M4 10h16"/><circle cx="16" cy="16" r="3.4"/><path d="M16 15v1.4l1 .8"/></svg></div>
               <div><div class="kpi-label">Pending Requests</div><div class="kpi-value" id="kpi-pending">0</div></div>
+            </div>
+          </div>
+          <div class="kpi-card red" id="kpi-rejected-card">
+            <div class="kpi-row">
+              <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
+              <div><div class="kpi-label">Rejected Requests</div><div class="kpi-value" id="kpi-rejected">0</div></div>
             </div>
           </div>
           <div class="kpi-card purple">
@@ -626,10 +658,11 @@
           <div><h2>PO Stock Management</h2><p>View and manage purchase order stock information</p></div>
         </div>
 
-        <div class="alert-box warn" id="po-frozen-banner" style="display:none;">🔒 Purchase Order Editing Frozen — you can view stock but cannot add, update, or add re-used bags to a PO. Contact your Administrator for access.</div>
+        <div class="alert-box warn" id="po-frozen-banner" style="display:none;">🔒 Read-only — only an Administrator can add or edit Purchase Orders and Re-used Bags. You can view and search stock information.</div>
 
         <div class="panel form-panel" style="margin-bottom:22px;max-width:none;" id="po-form-panel">
-          <h3 style="font-size:14.5px;margin-bottom:14px;">Add / Update Purchase Order</h3>
+          <h3 style="font-size:14.5px;margin-bottom:6px;">Add Purchase Order <span style="font-size:11px;font-weight:700;color:var(--slate-500);">(Admin only)</span></h3>
+          <p style="font-size:12px;color:var(--slate-600);margin-bottom:14px;">Every new or updated Purchase Order starts as <strong>Quality Pending</strong> and cannot be issued until Quality Approval is completed.</p>
           <div class="alert-box error" id="po-alert"></div>
           <form id="po-form">
             <div class="form-grid">
@@ -705,6 +738,32 @@
         </div>
       </div>
 
+      <!-- EDIT PURCHASE ORDER MODAL (Admin only) -->
+      <div class="modal-overlay" id="poedit-modal-overlay">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>Edit Purchase Order</h3>
+            <button type="button" class="modal-close" id="poedit-modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="alert-box error" id="poedit-alert"></div>
+            <div class="alert-box warn" style="display:flex;margin-bottom:14px;">🟡 Saving changes resets this PO to Quality Pending. Quality Approval is required again. Existing quality history and issue history are kept.</div>
+            <input type="hidden" id="poedit-po-hidden" value="">
+            <div class="form-grid">
+              <div class="field"><label>PO Number</label><input type="text" id="poedit-number" readonly></div>
+              <div class="field"><label>Item Name</label><select id="poedit-itemname"></select></div>
+              <div class="field"><label>Total Bags</label><input type="number" id="poedit-bags" min="1" step="1"></div>
+              <div class="field"><label>Received Date</label><input type="date" id="poedit-receiveddate"></div>
+            </div>
+            <div class="helper-text" id="poedit-issued-note" style="margin-top:6px;"></div>
+          </div>
+          <div class="form-actions" style="padding:0 26px 22px;">
+            <button type="button" class="btn-submit" id="poedit-save-btn">Save Changes</button>
+            <button type="button" class="btn-secondary" id="poedit-cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       <!-- RE-USED BAGS MODAL -->
       <div class="modal-overlay" id="reuse-modal-overlay">
         <div class="modal-card">
@@ -747,7 +806,17 @@
               </div>
               <div class="field full">
                 <label>Requested Quantity (Bags)</label>
-                <input type="number" id="req-qty" min="1" placeholder="e.g. 10" required>
+                <select id="req-qty" required>
+                  <option value="">Select Quantity</option>
+                  <option value="25">25 Bags</option>
+                  <option value="50">50 Bags</option>
+                  <option value="75">75 Bags</option>
+                  <option value="100">100 Bags</option>
+                  <option value="125">125 Bags</option>
+                  <option value="150">150 Bags</option>
+                  <option value="175">175 Bags</option>
+                  <option value="200">200 Bags</option>
+                </select>
               </div>
               <div class="field full">
                 <label>Remarks (optional)</label>
@@ -777,6 +846,19 @@
           <table>
             <thead><tr><th>Request No</th><th>Department</th><th>Requested Qty</th><th>Issue From PO</th><th>Status</th><th>Action</th></tr></thead>
             <tbody id="issue-table"></tbody>
+          </table>
+          </div>
+        </div>
+
+        <div class="panel" id="issue-admin-panel" style="margin-top:20px;display:none;">
+          <div class="panel-head">
+            <h3>🛡️ Request Administration <span style="font-size:11px;font-weight:700;color:var(--slate-500);">(Admin only)</span></h3>
+          </div>
+          <p style="padding:0 22px 14px;font-size:12.5px;color:var(--slate-600);">Rejected and Issued requests. Only Rejected requests can be deleted here — Issued requests are linked to stock and Issue History and are protected from deletion.</p>
+          <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Request No</th><th>Department</th><th>Qty</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="issue-admin-table"></tbody>
           </table>
           </div>
         </div>
@@ -873,7 +955,7 @@
                   <span class="perm-status notallowed">Not Allowed</span>
                 </label>
                 <label class="perm-row" data-perm-row="poEdit" style="padding-left:28px;">
-                  <span class="perm-left"><input type="checkbox" id="perm-poEdit" data-perm="poEdit"> ↳ Add / Update Purchase Order (incl. Re-used Bags)</span>
+                  <span class="perm-left"><input type="checkbox" id="perm-poEdit" data-perm="poEdit"> ↳ Add / Update Purchase Order (incl. Re-used Bags) — Admin only</span>
                   <span class="perm-status notallowed">Not Allowed</span>
                 </label>
                 <label class="perm-row" data-perm-row="poQuality" style="padding-left:28px;">
@@ -1355,7 +1437,8 @@ function normalizeDB(){
     if(!p.receivedDate) p.receivedDate=new Date().toISOString().slice(0,10);
     if(typeof p.approvedBags!=='number') p.approvedBags=0;
     if(typeof p.rejectedBags!=='number') p.rejectedBags=0;
-    if(p.approvedBags===0&&p.rejectedBags===0&&!p.qualityUpdatedAt) p.approvedBags=p.totalBags;
+    // v2: a PO with approvedBags = 0 and rejectedBags = 0 is now simply
+    // Quality Pending (pending = totalBags). It is never auto-approved.
   });
   DB.members.forEach(m=>{
     if(!m.permissions||typeof m.permissions!=='object') m.permissions=defaultPermissions(m.role==='Admin');
@@ -1407,14 +1490,18 @@ function canEditQuality(){
   return hasPermission('poStock') && hasPermission('poQuality');
 }
 
-// Add/Update/Delete PO (and Re-used Bags, which piggybacks on PO editing
-// rather than Quality) requires Admin, or a user with BOTH PO Stock
-// Management access AND the separate "Add / Update Purchase Order"
-// permission enabled. If PO Stock Management is off, editing is off too
-// regardless of the poEdit flag.
+// Add/Update/Edit PO and Re-used Bags (PO stock modification) are ADMIN ONLY.
+// The old per-member "poEdit" permission flag is kept in the data for
+// backward compatibility but no longer grants anything.
 function canEditPO(){
-  if(isAdmin()) return true;
-  return hasPermission('poStock') && hasPermission('poEdit');
+  return isAdmin();
+}
+const UNAUTHORIZED_MSG = 'Unauthorized: Admin access required.';
+function qualityStatusOf(p){
+  const pend = pendingQualityBags(p);
+  if(pend > 0) return 'Pending';
+  if((p.approvedBags||0) === 0 && (p.rejectedBags||0) > 0) return 'Rejected';
+  return 'Approved';
 }
 
 // Re-used Bags are independent stock, tracked per ITEM NAME (not per PO) —
@@ -1712,6 +1799,9 @@ function renderDashboard(filter){
   const totalBags = totalAvailableBags();
   const pending = DB.requests.filter(r=>r.status==='Pending').length;
   const issued = DB.requests.filter(r=>r.status==='Issued').length;
+  // Department Requests only (DB.requests) — not rejected PO bags / quality.
+  const rejectedReqs = DB.requests.filter(r=>r.status==='Rejected').length;
+  document.getElementById('kpi-rejected').textContent = rejectedReqs;
   document.getElementById('kpi-bags').textContent = totalBags.toLocaleString();
   document.getElementById('kpi-pending').textContent = pending;
   document.getElementById('kpi-issued').textContent = issued;
@@ -1777,21 +1867,34 @@ function renderApprovedBagsSummary(){
 document.getElementById('dash-po-search').addEventListener('input', e=>renderDashboard(e.target.value));
 
 /* ============ DONUT CHART (canvas) ============ */
-const donutColors = ['#3b82f6','#12b981','#f5a742','#8b6be0','#e0453f','#14b8b0'];
+// Purple is reserved for Re-used Bags, so it is not used for PO slices.
+const REUSED_COLOR = '#8B5CF6';
+const donutColors = ['#3b82f6','#12b981','#f5a742','#84cc16','#e0453f','#14b8b0'];
+function reusedAvailableTotal(){
+  const items = Array.from(new Set(DB.reuses.map(r=>r.item)));
+  return items.reduce((s,item)=>s+reusedAvailableForItem(item),0);
+}
 function drawDonut(){
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const cx = canvas.width/2, cy = canvas.height/2, rOuter=90, rInner=56;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const total = DB.pos.reduce((s,p)=>s+approvedAvailableForPO(p),0) || 1;
+  // Slices: Approved PO stock per PO (blue/green/... palette) + one purple
+  // Re-used Bags slice (independent pool, never merged into a PO).
+  const slices = DB.pos.map((p,i)=>({label:p.po, value:approvedAvailableForPO(p), color:donutColors[i % donutColors.length]}));
+  const reusedAvail = reusedAvailableTotal();
+  if(DB.reuses.length > 0) slices.push({label:'Re-used Bags', value:reusedAvail, color:REUSED_COLOR});
+  const realTotal = slices.reduce((s,x)=>s+x.value,0);
+  const total = realTotal || 1;
   let start = -Math.PI/2;
-  DB.pos.forEach((p,i)=>{
-    const slice = (approvedAvailableForPO(p)/total) * Math.PI*2;
+  slices.forEach(sl=>{
+    const slice = (sl.value/total) * Math.PI*2;
+    if(slice <= 0) return;
     ctx.beginPath();
     ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,rOuter,start,start+slice);
     ctx.closePath();
-    ctx.fillStyle = donutColors[i % donutColors.length];
+    ctx.fillStyle = sl.color;
     ctx.fill();
     start += slice;
   });
@@ -1801,17 +1904,16 @@ function drawDonut(){
   ctx.fillStyle = '#101828';
   ctx.textAlign='center';
   ctx.font='700 22px Sora, sans-serif';
-  ctx.fillText(total.toLocaleString(), cx, cy-2);
+  ctx.fillText(realTotal.toLocaleString(), cx, cy-2);
   ctx.font='600 11px Manrope, sans-serif';
   ctx.fillStyle = '#8896a8';
   ctx.fillText('Bags Available', cx, cy+16);
 
-  document.getElementById('donut-legend').innerHTML = DB.pos.map((p,i)=>{
-    const avail = approvedAvailableForPO(p);
-    const pct = Math.round((avail/total)*100);
+  document.getElementById('donut-legend').innerHTML = slices.map(sl=>{
+    const pct = Math.round((sl.value/total)*100);
     return `<div class="legend-row">
-      <div class="legend-left"><span class="dot" style="background:${donutColors[i%donutColors.length]}"></span>${p.po}</div>
-      <span class="legend-val">${avail} (${pct}%)</span>
+      <div class="legend-left"><span class="dot" style="background:${sl.color}"></span>${escapeHtml(sl.label)}</div>
+      <span class="legend-val">${sl.value} (${pct}%)</span>
     </div>`;
   }).join('');
 }
@@ -1914,7 +2016,7 @@ function bindBarChartTooltip(canvas, bars, unitLabel){
       tip.style.display='block';
       tip.style.left = (e.clientX+14)+'px';
       tip.style.top = (e.clientY-14)+'px';
-      tip.textContent = `${hit.cat}: ${hit.val.toLocaleString()}${unitLabel?(' '+unitLabel):''}`;
+      tip.textContent = hit.text || `${hit.cat}: ${hit.val.toLocaleString()}${unitLabel?(' '+unitLabel):''}`;
     } else {
       tip.style.display='none';
     }
@@ -1952,18 +2054,119 @@ function currentDeptChartRange(){
 // calculated from the real issueDate — never the number of requests, and
 // never the request creation date. Departments with zero issued bags in the
 // selected period are still included, at 0.
+// Each issue is split into PO bags (fromApproved) and Re-used bags
+// (fromReused). Legacy issues with no split fields count fully as PO bags.
+// The two are calculated separately, so nothing is double-counted.
+function issueSplit(i){
+  const qty = Number(i.qty)||0;
+  const hasApproved = typeof i.fromApproved === 'number';
+  const hasReused = typeof i.fromReused === 'number';
+  if(!hasApproved && !hasReused) return {po: qty, reused: 0};
+  const reused = hasReused ? i.fromReused : Math.max(0, qty - i.fromApproved);
+  const po = hasApproved ? i.fromApproved : Math.max(0, qty - reused);
+  return {po, reused};
+}
 function departmentIssueData(){
   const depts = (DB.departments||[]).map(d=>d.name);
   const range = currentDeptChartRange();
   const issues = range
     ? DB.issues.filter(i => inRange(i.issueDate, range.startStr, range.endStr))
     : DB.issues;
-  const values = depts.map(name => issues.filter(i=>i.dept===name).reduce((s,i)=>s+i.qty,0));
-  return {depts, values, range};
+  const poValues = depts.map(name => issues.filter(i=>i.dept===name).reduce((s,i)=>s+issueSplit(i).po,0));
+  const reusedValues = depts.map(name => issues.filter(i=>i.dept===name).reduce((s,i)=>s+issueSplit(i).reused,0));
+  const values = poValues.map((v,idx)=>v+reusedValues[idx]);
+  return {depts, values, poValues, reusedValues, range};
 }
 function drawDeptChart(){
-  const {depts, values} = departmentIssueData();
-  drawSimpleBarChart('dept-bar-chart', depts, values, '#3b82f6', 'bags');
+  const {depts, poValues, reusedValues} = departmentIssueData();
+  drawStackedBarChart('dept-bar-chart', depts, [
+    {name:'PO Bags Issued', color:'#3b82f6', values:poValues},
+    {name:'Re-used Bags Issued', color:REUSED_COLOR, values:reusedValues},
+  ]);
+}
+// Stacked bar chart (native canvas, same style as drawSimpleBarChart).
+function drawStackedBarChart(canvasId, categories, series){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const wrap = canvas.parentElement;
+  const cssWidth = Math.max(280, wrap.clientWidth || 600);
+  const cssHeight = 290;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.width = cssWidth+'px';
+  canvas.style.height = cssHeight+'px';
+  canvas.width = Math.round(cssWidth*dpr);
+  canvas.height = Math.round(cssHeight*dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssWidth,cssHeight);
+
+  const padding = {top:52, right:18, bottom:36, left:40};
+  const chartW = cssWidth - padding.left - padding.right;
+  const chartH = cssHeight - padding.top - padding.bottom;
+  const totals = categories.map((_,i)=>series.reduce((s,sr)=>s+(sr.values[i]||0),0));
+  const maxVal = Math.max(1, ...totals, 4);
+  const niceMax = Math.ceil(maxVal/4)*4 || 4;
+
+  // Legend
+  ctx.font = '600 11.5px Manrope, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  let lx = padding.left;
+  series.forEach(sr=>{
+    ctx.fillStyle = sr.color;
+    ctx.fillRect(lx, 11, 11, 11);
+    ctx.fillStyle = '#5b6b81';
+    ctx.fillText(sr.name, lx+17, 17);
+    lx += 17 + ctx.measureText(sr.name).width + 22;
+  });
+
+  ctx.strokeStyle = '#eef1f7';
+  ctx.fillStyle = '#8896a8';
+  ctx.font = '600 10.5px Manrope, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for(let i=0;i<=4;i++){
+    const val = Math.round((niceMax/4)*i);
+    const y = padding.top + chartH - (chartH*(i/4));
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(padding.left+chartW, y);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillText(val, padding.left-8, y);
+  }
+
+  const n = Math.max(categories.length, 1);
+  const slot = chartW/n;
+  const barWidth = Math.min(64, slot*0.5);
+  const bars = [];
+  categories.forEach((cat,i)=>{
+    const x = padding.left + slot*i + slot/2 - barWidth/2;
+    let yCursor = padding.top + chartH;
+    series.forEach(sr=>{
+      const v = sr.values[i]||0;
+      const h = (v/niceMax)*chartH;
+      if(h > 0){
+        ctx.fillStyle = sr.color;
+        ctx.fillRect(x, yCursor-h, barWidth, h);
+        yCursor -= h;
+      }
+    });
+    const total = totals[i];
+    const topY = padding.top + chartH - (total/niceMax)*chartH;
+    ctx.fillStyle = '#101828';
+    ctx.font = '700 12px Manrope, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(total.toLocaleString(), x+barWidth/2, topY-8);
+    ctx.fillStyle = '#5b6b81';
+    ctx.font = '600 11px Manrope, sans-serif';
+    const label = cat.length>12 ? cat.slice(0,11)+'…' : cat;
+    ctx.fillText(label, x+barWidth/2, padding.top+chartH+18);
+    const text = `${cat} — ` + series.map(sr=>`${sr.name}: ${(sr.values[i]||0).toLocaleString()}`).join(' · ') + ` · Total Issued: ${total.toLocaleString()}`;
+    bars.push({x, y:topY, w:barWidth, h:Math.max(padding.top+chartH-topY,4), val:total, cat, text});
+  });
+  bindBarChartTooltip(canvas, bars, 'bags');
 }
 document.getElementById('dept-filter-type').addEventListener('change', function(){
   deptChartFilterType = this.value;
@@ -2011,7 +2214,7 @@ function exportDeptChartPDF(){
     const margin = 34;
     let y = margin;
 
-    const {depts, values} = departmentIssueData();
+    const {depts, values, poValues, reusedValues} = departmentIssueData();
     const total = values.reduce((s,v)=>s+v,0);
 
     doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(11,28,61);
@@ -2038,9 +2241,9 @@ function exportDeptChartPDF(){
     y = pdfSectionTitle(doc, deptChartExportTitle(), margin, y, pageW, margin, pageH);
     y = pdfTable(doc, {
       x: margin, y, margin, pageW, pageH,
-      headers: ['Department','Issued Bags'],
-      colWidths: [(pageW-margin*2)*0.7, (pageW-margin*2)*0.3],
-      rows: depts.map((d,i)=>[d, values[i]]),
+      headers: ['Department','PO Bags Issued','Re-used Bags Issued','Total Issued'],
+      colWidths: [(pageW-margin*2)*0.34, (pageW-margin*2)*0.22, (pageW-margin*2)*0.26, (pageW-margin*2)*0.18],
+      rows: depts.map((d,i)=>[d, poValues[i], reusedValues[i], values[i]]),
     });
 
     doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(11,28,61);
@@ -2072,10 +2275,18 @@ function applyPOFreezeUI(){
   const banner = document.getElementById('po-frozen-banner');
   const formPanel = document.getElementById('po-form-panel');
   const reuseBtn = document.getElementById('reuse-add-btn');
-  const frozen = hasPermission('poStock') && !canEditPO();
-  if(banner) banner.style.display = frozen ? 'flex' : 'none';
-  if(formPanel) formPanel.style.display = canEditPO() ? 'block' : 'none';
-  if(reuseBtn) reuseBtn.style.display = canEditPO() ? 'inline-flex' : 'none';
+  const admin = canEditPO();
+  // Non-admin: read-only. Banner explains it, the add form is hidden, and the
+  // Re-used Bags button stays visible but clearly disabled.
+  if(banner) banner.style.display = (hasPermission('poStock') && !admin) ? 'flex' : 'none';
+  if(formPanel) formPanel.style.display = admin ? 'block' : 'none';
+  if(reuseBtn){
+    reuseBtn.style.display = 'inline-flex';
+    reuseBtn.disabled = !admin;
+    reuseBtn.classList.toggle('btn-locked', !admin);
+    reuseBtn.textContent = admin ? '+ Add Re-used Bags' : '🔒 Add Re-used Bags (Admin only)';
+    reuseBtn.title = admin ? '' : 'Only an Administrator can modify Re-used Bag stock.';
+  }
 }
 function renderPOStock(filter){
   filter = (filter||'').toLowerCase();
@@ -2093,6 +2304,7 @@ function renderPOStock(filter){
       <td class="mono">${p.totalBags}</td><td class="mono">${approvedAvailableForPO(p)}</td>
       <td>${formatDate(p.receivedDate)}</td>
       <td>
+        <div style="margin-bottom:6px;"><span class="status-pill Q${qualityStatusOf(p)}">${qualityStatusOf(p)}</span></div>
         <div class="qty-badges">
           <span class="qty-badge approved">🟢 ${p.approvedBags||0}</span>
           <span class="qty-badge rejected">🔴 ${p.rejectedBags||0}</span>
@@ -2100,12 +2312,19 @@ function renderPOStock(filter){
         </div>
         ${updatedLine}
       </td>
-      <td>${canEditQuality() ? `<button type="button" class="action-btn neutral" data-quality-po="${escapeHtml(p.po)}">Update Quality</button>` : '—'}</td>
+      <td>
+        ${canEditPO() ? `<button type="button" class="action-btn issue" data-edit-po="${escapeHtml(p.po)}">✏️ Edit</button>` : ''}
+        ${canEditQuality() ? `<button type="button" class="action-btn neutral" data-quality-po="${escapeHtml(p.po)}">Update Quality</button>` : ''}
+        ${(!canEditPO() && !canEditQuality()) ? '<span style="color:var(--slate-400);font-size:12px;">🔒 View only</span>' : ''}
+      </td>
     </tr>`;
   }).join('') || `<tr class="empty-row"><td colspan="7">No purchase orders yet. Use the form above to add one.</td></tr>`;
 
   document.querySelectorAll('#postock-table [data-quality-po]').forEach(btn=>{
     btn.addEventListener('click', ()=>openQualityModal(btn.dataset.qualityPo));
+  });
+  document.querySelectorAll('#postock-table [data-edit-po]').forEach(btn=>{
+    btn.addEventListener('click', ()=>openPOEditModal(btn.dataset.editPo));
   });
   renderReuseHistory();
 }
@@ -2157,9 +2376,8 @@ document.getElementById('po-itemname').addEventListener('change', handleAddNewIt
 document.getElementById('po-form').addEventListener('submit', function(e){
   e.preventDefault();
   const alertBox = document.getElementById('po-alert');
-  if(!canEditPO()){
-    alertBox.textContent = 'Access Denied — Purchase Order editing is currently restricted for your account.';
-    alertBox.style.display='flex';
+  if(!isAdmin()){
+    alert(UNAUTHORIZED_MSG);
     return;
   }
   const po = document.getElementById('po-number').value.trim().toUpperCase();
@@ -2182,19 +2400,109 @@ document.getElementById('po-form').addEventListener('submit', function(e){
   }
   alertBox.style.display='none';
   const bags = parseInt(document.getElementById('po-bags').value,10);
+  if(!Number.isInteger(bags) || bags < 1){
+    alertBox.textContent = 'Total Bags must be a whole number of at least 1.';
+    alertBox.style.display='flex';
+    return;
+  }
   DB.pos.push({
     po,
     name: itemNameSel.value,
     totalBags: bags, receivedDate,
-    // New stock is issueable immediately — auto-approved in full. Admin/authorized
-    // users can adjust Approved/Rejected later via "Update Quality" if needed.
-    approvedBags: bags, rejectedBags: 0,
+    // New PO is NEVER auto-approved: it starts as Quality Pending
+    // (approved 0, rejected 0, pending = totalBags) until Quality Approval.
+    approvedBags: 0, rejectedBags: 0,
+    qualityStatus: 'Pending',
   });
   saveDB();
   this.reset();
   populateItemNameDropdown(DB.itemNames[0]);
   renderAll();
 });
+
+/* ============ EDIT PURCHASE ORDER (Admin only) ============ */
+function openPOEditModal(po){
+  if(!isAdmin()){ alert(UNAUTHORIZED_MSG); return; }
+  const p = poByNumber(po);
+  if(!p) return;
+  document.getElementById('poedit-po-hidden').value = p.po;
+  document.getElementById('poedit-number').value = p.po;
+  const sel = document.getElementById('poedit-itemname');
+  const names = DB.itemNames.includes(p.name) ? DB.itemNames : [p.name, ...DB.itemNames];
+  sel.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  sel.value = p.name;
+  document.getElementById('poedit-bags').value = p.totalBags;
+  document.getElementById('poedit-receiveddate').value = p.receivedDate || '';
+  const issued = approvedIssuedForPO(p.po);
+  document.getElementById('poedit-issued-note').textContent = issued > 0
+    ? `${issued} bag(s) have already been issued from this PO. Total Bags cannot be set below ${issued}.`
+    : '';
+  document.getElementById('poedit-alert').style.display='none';
+  document.getElementById('poedit-modal-overlay').classList.add('open');
+}
+function closePOEditModal(){
+  document.getElementById('poedit-modal-overlay').classList.remove('open');
+}
+document.getElementById('poedit-modal-close').addEventListener('click', closePOEditModal);
+document.getElementById('poedit-cancel-btn').addEventListener('click', closePOEditModal);
+document.getElementById('poedit-modal-overlay').addEventListener('click', function(e){
+  if(e.target === this) closePOEditModal();
+});
+function savePOEdit(){
+  if(!isAdmin()){ alert(UNAUTHORIZED_MSG); return; }
+  const alertBox = document.getElementById('poedit-alert');
+  alertBox.style.display='none';
+  const po = document.getElementById('poedit-po-hidden').value;
+  const p = poByNumber(po);
+  if(!p) return;
+  const name = document.getElementById('poedit-itemname').value;
+  const bagsRaw = document.getElementById('poedit-bags').value;
+  const bags = Number(bagsRaw);
+  const receivedDate = document.getElementById('poedit-receiveddate').value;
+  const fail = msg => { alertBox.textContent = msg; alertBox.style.display='flex'; };
+  if(!name) return fail('Please select a valid item name.');
+  if(bagsRaw==='' || !Number.isInteger(bags) || bags < 1) return fail('Total Bags must be a whole number of at least 1.');
+  if(!receivedDate) return fail('Please select the Received Date.');
+  const issued = approvedIssuedForPO(p.po);
+  if(bags < issued) return fail(`Total Bags cannot be less than the ${issued} bag(s) already issued from this PO.`);
+
+  if(name === p.name && bags === p.totalBags && receivedDate === p.receivedDate){
+    closePOEditModal();
+    showCloudStatus('No changes made');
+    return;
+  }
+  // Any PO update sends the PO back to Quality Pending. Historical quality
+  // records (DB.qualityHistory) and Issue History are kept untouched; a new
+  // history entry records the reset.
+  const prevApproved = p.approvedBags||0, prevRejected = p.rejectedBags||0;
+  p.name = name;
+  p.totalBags = bags;
+  p.receivedDate = receivedDate;
+  p.approvedBags = 0;
+  p.rejectedBags = 0;
+  p.qualityStatus = 'Pending';
+  delete p.qualityDateTime;
+  delete p.qualityUpdatedBy;
+  delete p.qualityUpdatedAt;
+  const qid = 'QUALITY-' + String(DB.nextQualityNum).padStart(4,'0');
+  DB.nextQualityNum++;
+  DB.qualityHistory.push({
+    id: qid,
+    po: p.po,
+    approvedBags: 0,
+    rejectedBags: 0,
+    qualityDateTime: nowForDateTimeLocal(),
+    action: 'PO Updated — Quality reset to Pending',
+    previousApprovedBags: prevApproved,
+    previousRejectedBags: prevRejected,
+    updatedByUserId: currentUser ? currentUser.id : null,
+    updatedByName: currentUser ? currentUser.name : 'Unknown',
+  });
+  saveDB();
+  closePOEditModal();
+  renderAll();
+}
+document.getElementById('poedit-save-btn').addEventListener('click', savePOEdit);
 
 /* ============ QUALITY STATUS MODAL ============ */
 // Local datetime string ("YYYY-MM-DDTHH:MM") suitable for an
@@ -2273,6 +2581,12 @@ document.getElementById('qm-save-btn').addEventListener('click', function(){
     alertBox.style.display='flex';
     return;
   }
+  const alreadyIssued = approvedIssuedForPO(p.po);
+  if(approved < alreadyIssued){
+    alertBox.textContent = `Approved Bags cannot be less than the ${alreadyIssued} bag(s) already issued from this PO.`;
+    alertBox.style.display='flex';
+    return;
+  }
   const qualityDateTime = document.getElementById('qm-datetime').value;
   if(!qualityDateTime){
     alertBox.textContent = 'Please select the Quality Date & Time.';
@@ -2287,6 +2601,7 @@ document.getElementById('qm-save-btn').addEventListener('click', function(){
   p.qualityDateTime = qualityDateTime;
   p.qualityUpdatedBy = currentUser ? {userId: currentUser.id, username: currentUser.username, name: currentUser.name} : null;
   p.qualityUpdatedAt = new Date().toISOString();
+  p.qualityStatus = qualityStatusOf(p);
   saveDB();
 
   // Audit trail: every Approved/Rejected change creates a permanent quality
@@ -2324,7 +2639,7 @@ function renderReuseHistory(){
     </tr>`).join('') || `<tr class="empty-row"><td colspan="5">No re-used bags recorded yet.</td></tr>`;
 }
 function openReuseModal(){
-  if(!canEditPO()){ alert('Access Denied — Purchase Order editing is currently restricted for your account.'); return; }
+  if(!isAdmin()){ alert(UNAUTHORIZED_MSG); return; }
   document.getElementById('reuse-alert').style.display='none';
   populateItemSelect('reuse-item-select', DB.itemNames[0]);
   document.getElementById('reuse-qty').value = '';
@@ -2343,7 +2658,7 @@ document.getElementById('reuse-modal-overlay').addEventListener('click', functio
 });
 document.getElementById('reuse-item-select').addEventListener('change', handleAddNewItemChange);
 document.getElementById('reuse-save-btn').addEventListener('click', function(){
-  if(!canEditPO()){ alert('Access Denied — Purchase Order editing is currently restricted for your account.'); return; }
+  if(!isAdmin()){ alert(UNAUTHORIZED_MSG); return; }
   const alertBox = document.getElementById('reuse-alert');
   alertBox.style.display='none';
   const itemSel = document.getElementById('reuse-item-select');
@@ -2400,17 +2715,19 @@ function populateRequestForm(){
   if(activeDepts.some(d=>d.name===chosen)) sel.value = chosen;
 }
 
+const ALLOWED_REQUEST_QTYS = [25,50,75,100,125,150,175,200];
 document.getElementById('request-form').addEventListener('submit', function(e){
   e.preventDefault();
   const dept = document.getElementById('req-dept').value;
+  // The dropdown value is a plain number string ("25"), stored as a number.
   const qty = parseInt(document.getElementById('req-qty').value,10);
   const remarks = document.getElementById('req-remarks').value.trim();
   const errBox = document.getElementById('req-error');
   const okBox = document.getElementById('req-success');
   okBox.style.display='none'; errBox.style.display='none';
 
-  if(!dept || !qty || qty < 1){
-    errBox.textContent = 'Please select a department and enter a valid quantity.';
+  if(!dept || !ALLOWED_REQUEST_QTYS.includes(qty)){
+    errBox.textContent = 'Please select a department and a requested quantity.';
     errBox.style.display='flex';
     return;
   }
@@ -2458,6 +2775,7 @@ function renderIssueManagement(){
       <td>
         <button class="action-btn issue" data-act="issue" data-id="${r.id}">Issue</button>
         <button class="action-btn reject" data-act="reject" data-id="${r.id}">Reject</button>
+        ${isAdmin() ? `<button class="action-btn warn" data-act="delete" data-id="${r.id}">🗑 Delete Request</button>` : ''}
       </td>
     </tr>`;
   }).join('') || `<tr class="empty-row"><td colspan="6">No requests awaiting action.</td></tr>`;
@@ -2468,6 +2786,50 @@ function renderIssueManagement(){
   document.querySelectorAll('#issue-table .issue-po-select').forEach(sel=>{
     sel.addEventListener('change', ()=>updateIssuePreview(sel.dataset.id));
   });
+  renderIssueAdminPanel();
+}
+
+// Admin-only list of Rejected / Issued requests so they can be reviewed and
+// (for Rejected ones) deleted. Issued requests are protected.
+function renderIssueAdminPanel(){
+  const panel = document.getElementById('issue-admin-panel');
+  const tbody = document.getElementById('issue-admin-table');
+  if(!panel || !tbody) return;
+  if(!isAdmin()){ panel.style.display='none'; tbody.innerHTML=''; return; }
+  panel.style.display='block';
+  const rows = DB.requests.filter(r=>r.status!=='Pending').sort((a,b)=>b.id.localeCompare(a.id));
+  tbody.innerHTML = rows.map(r=>{
+    const locked = r.status==='Issued' || DB.issues.some(i=>i.reqId===r.id);
+    return `<tr>
+      <td class="po-link">${escapeHtml(r.id)}</td><td>${escapeHtml(r.dept)}</td><td class="mono">${r.qty}</td>
+      <td><span class="status-pill ${r.status}">${r.status}</span></td><td>${formatDate(r.date)}</td>
+      <td><button class="action-btn warn ${locked?'btn-locked':''}" data-act="delete" data-id="${escapeHtml(r.id)}" ${locked?'title="Issued requests are linked to stock and cannot be deleted"':''}>🗑 Delete Request</button></td>
+    </tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="6">No rejected or issued requests.</td></tr>`;
+  tbody.querySelectorAll('[data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleIssueAction(btn.dataset.act, btn.dataset.id));
+  });
+}
+
+// Delete a single Department Request (Admin only). Never touches POs,
+// Quality data, Re-used Bags or Issue History. A request that has already
+// been issued is protected, because deleting it would orphan the stock
+// transaction and corrupt the stock figures.
+function deleteRequest(id){
+  if(!isAdmin()){ alert(UNAUTHORIZED_MSG); return; }
+  const errBox = document.getElementById('issue-error');
+  errBox.style.display='none';
+  const req = DB.requests.find(r=>r.id===id);
+  if(!req) return;
+  if(req.status==='Issued' || DB.issues.some(i=>i.reqId===id)){
+    errBox.textContent = `Request ${id} has already been issued and is linked to stock and Issue History. It cannot be deleted.`;
+    errBox.style.display='flex';
+    return;
+  }
+  if(!confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
+  DB.requests = DB.requests.filter(r=>r.id!==id);
+  saveDB();
+  renderAll();
 }
 
 // Parses a source-select value into either {type:'po', po} or
@@ -2506,10 +2868,17 @@ function updateIssuePreview(reqId){
 }
 
 function handleIssueAction(act, id){
+  if(act==='delete'){ deleteRequest(id); return; }
   const req = DB.requests.find(r=>r.id===id);
   const errBox = document.getElementById('issue-error');
   errBox.style.display='none';
   if(!req) return;
+  if(req.status !== 'Pending'){
+    errBox.textContent = `Request ${id} is no longer pending (status: ${req.status}).`;
+    errBox.style.display='flex';
+    renderAll();
+    return;
+  }
 
   if(act==='reject'){
     req.status = 'Rejected';
@@ -2775,6 +3144,14 @@ function applyPermDependencies(){
       childCb.disabled = !parentEnabled || childCb.dataset.roleDisabled === '1';
     });
   });
+  // "Add / Update Purchase Order" is Admin-only now; the flag can't be granted.
+  const poEditCb = document.getElementById('perm-poEdit');
+  if(poEditCb){
+    poEditCb.checked = false; poEditCb.disabled = true;
+    updatePermRowUI(poEditCb);
+    const row = poEditCb.closest('.perm-row');
+    if(row) row.style.opacity = '.45';
+  }
 }
 function setPermissionCheckboxes(permissions){
   PERMISSION_KEYS.forEach(key=>{
@@ -3313,6 +3690,61 @@ function buildReportPDF(type, start, end, startStr, endStr){
   const fname = `${type==='weekly'?'Weekly':'Monthly'}_Warehouse_Report_${startStr}_to_${endStr}.pdf`;
   doc.save(fname);
 }
+
+/* ============ REFRESH SYSTEM (manual cloud re-sync) ============
+   Fetches the latest row from Supabase and REPLACES the local copy with it.
+   It never writes to the cloud, never resets data and never logs out. The
+   existing Realtime channel is reused (setupRealtimeSync is guarded), so
+   no duplicate subscription is created. */
+let refreshSystemBusy = false;
+async function refreshSystem(){
+  if(refreshSystemBusy || !currentUser) return;
+  refreshSystemBusy = true;
+  const btn = document.getElementById('refresh-system-btn');
+  const label = document.getElementById('refresh-system-label');
+  btn.disabled = true; btn.classList.remove('err'); btn.classList.add('spinning');
+  label.textContent = 'Refreshing...';
+  let ok = false;
+  try{
+    // Let any save that is already in flight finish first, so the fetch below
+    // reflects it and local changes are not lost.
+    try{ await cloudSaveChain; }catch(e){}
+    const record = await cloudLoadRecord();
+    if(!record || !record.data || typeof record.data !== 'object') throw new Error('No cloud data returned');
+    cloudLastUpdatedAt = record.updated_at || cloudLastUpdatedAt;
+    cloudApplyingRemote = true;         // blocks cloudSaveDB during this swap
+    try{
+      DB = record.data;
+      normalizeDB();
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+    } finally {
+      cloudApplyingRemote = false;
+    }
+    cloudReady = true;
+    setupRealtimeSync();                // no-op if the channel already exists
+    applyRoleVisibility();
+    renderAll();                        // stays on the current page
+    ok = true;
+  }catch(error){
+    console.error('Refresh System failed:', error);
+  }
+  btn.classList.remove('spinning');
+  if(ok){
+    label.textContent = 'System Updated';
+    showCloudStatus('System Updated');
+  } else {
+    label.textContent = 'Refresh failed';
+    btn.classList.add('err');
+    showCloudStatus('Unable to refresh. Please check your connection.', true);
+  }
+  setTimeout(()=>{
+    label.textContent = 'Refresh System';
+    btn.classList.remove('err');
+    btn.disabled = false;
+    refreshSystemBusy = false;
+  }, ok ? 1500 : 2500);
+}
+document.getElementById('refresh-system-btn').addEventListener('click', refreshSystem);
 
 /* ============ MASTER RENDER ============ */
 function renderAll(){
