@@ -1077,33 +1077,104 @@ const CLOUD_ROW_ID = 'greige-main';
 let cloudReady = false;
 let cloudSaveChain = Promise.resolve();
 let cloudLastError = null;
+let cloudRealtimeChannel = null;
+let cloudRealtimeStatus = 'CONNECTING';
+let cloudLastUpdatedAt = null;
+let cloudApplyingRemote = false;
 
-async function cloudLoadDB(){
+function setCloudRealtimeStatus(status){
+  cloudRealtimeStatus = status;
+  const labels = {
+    CONNECTING: '☁️ Connecting…',
+    SUBSCRIBED: '🟢 Live • Connected',
+    CHANNEL_ERROR: '🟠 Reconnecting…',
+    TIMED_OUT: '🟠 Reconnecting…',
+    CLOSED: '🔴 Offline / Reconnecting…'
+  };
+  showCloudStatus(labels[status] || ('☁️ ' + status), status !== 'SUBSCRIBED' && status !== 'CONNECTING');
+}
+
+async function cloudLoadRecord(){
   const { data, error } = await supabaseClient
     .from(CLOUD_TABLE)
     .select('id,data,updated_at')
     .eq('id', CLOUD_ROW_ID)
     .maybeSingle();
   if(error) throw error;
-  return data && data.data ? data.data : null;
+  return data || null;
+}
+
+async function cloudLoadDB(){
+  const record = await cloudLoadRecord();
+  cloudLastUpdatedAt = record && record.updated_at ? record.updated_at : null;
+  return record && record.data ? record.data : null;
+}
+
+function isNewerCloudTimestamp(value){
+  if(!value) return false;
+  if(!cloudLastUpdatedAt) return true;
+  return new Date(value).getTime() > new Date(cloudLastUpdatedAt).getTime();
+}
+
+async function refreshFromCloudIfNewer(){
+  try{
+    const record = await cloudLoadRecord();
+    if(!record || !record.data) return false;
+    if(!cloudLastUpdatedAt || isNewerCloudTimestamp(record.updated_at)){
+      cloudLastUpdatedAt = record.updated_at || new Date().toISOString();
+      cloudApplyingRemote = true;
+      DB = record.data;
+      normalizeDB();
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+      cloudApplyingRemote = false;
+      if(document.readyState !== 'loading') renderAll();
+      return true;
+    }
+  }catch(error){
+    console.error('Supabase refresh error:', error);
+  }
+  return false;
 }
 
 function cloudSaveDB(){
-  if(!DB) return Promise.resolve();
+  if(!DB || cloudApplyingRemote || !cloudReady) return Promise.resolve();
   const snapshot = JSON.parse(JSON.stringify(DB));
-  cloudSaveChain = cloudSaveChain.then(async ()=>{
+  cloudSaveChain = cloudSaveChain.catch(()=>{}).then(async ()=>{
+    /*
+      Re-read the cloud record immediately before writing. This prevents a
+      stale browser tab from blindly overwriting a newer record after it has
+      been running for a long time.
+    */
+    let latest = null;
+    try{ latest = await cloudLoadRecord(); }catch(e){ /* write below will surface the error */ }
+    if(latest && latest.updated_at && cloudLastUpdatedAt &&
+       new Date(latest.updated_at).getTime() > new Date(cloudLastUpdatedAt).getTime()){
+      cloudLastUpdatedAt = latest.updated_at;
+      cloudApplyingRemote = true;
+      DB = latest.data || DB;
+      normalizeDB();
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+      cloudApplyingRemote = false;
+      renderAll();
+      showCloudStatus('A newer cloud update was received. Please make your change again.', true);
+      return;
+    }
+
+    const updatedAt = new Date().toISOString();
     const { error } = await supabaseClient
       .from(CLOUD_TABLE)
-      .upsert({id:CLOUD_ROW_ID, data:snapshot, updated_at:new Date().toISOString()}, {onConflict:'id'});
+      .upsert({id:CLOUD_ROW_ID, data:snapshot, updated_at:updatedAt}, {onConflict:'id'});
     if(error){
       cloudLastError = error;
       console.error('Supabase save error:', error);
       showCloudStatus('Database save failed. Your changes were not confirmed by Supabase.', true);
       throw error;
     }
+    cloudLastUpdatedAt = updatedAt;
     cloudLastError = null;
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
     showCloudStatus('Saved to cloud');
-  }).catch(()=>{});
+  });
   return cloudSaveChain;
 }
 
@@ -1120,29 +1191,73 @@ function showCloudStatus(message, isError=false){
   el.style.color=isError?'#b42318':'#067647';
   el.style.opacity='1';
   clearTimeout(el._timer);
-  el._timer=setTimeout(()=>el.style.opacity='0',2600);
+  el._timer=setTimeout(()=>el.style.opacity='0',3500);
+}
+
+function setupRealtimeSync(){
+  if(cloudRealtimeChannel) return;
+  setCloudRealtimeStatus('CONNECTING');
+  cloudRealtimeChannel = supabaseClient
+    .channel('greige-main-realtime')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: CLOUD_TABLE,
+      filter: 'id=eq.' + CLOUD_ROW_ID
+    }, async (payload)=>{
+      if(payload.eventType === 'DELETE'){
+        console.warn('Supabase app_data row was deleted. Keeping local state until a valid cloud row is restored.');
+        showCloudStatus('Cloud record was deleted. Local data was not erased.', true);
+        return;
+      }
+
+      const record = payload.new || null;
+      if(!record || !record.data) return;
+      if(!isNewerCloudTimestamp(record.updated_at)) return;
+
+      cloudLastUpdatedAt = record.updated_at || new Date().toISOString();
+      cloudApplyingRemote = true;
+      DB = record.data;
+      normalizeDB();
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+      cloudApplyingRemote = false;
+
+      if(document.readyState !== 'loading') renderAll();
+      showCloudStatus('Live update received');
+    })
+    .subscribe((status)=>{
+      setCloudRealtimeStatus(status);
+      if(status === 'SUBSCRIBED'){
+        /* Re-fetch once after subscription so a change that happened during
+           connection setup is not missed. */
+        refreshFromCloudIfNewer();
+      }
+    });
 }
 
 async function initializeCloudDatabase(){
   try{
-    const cloudData = await cloudLoadDB();
-    if(cloudData && typeof cloudData==='object'){
-      DB = cloudData;
+    const record = await cloudLoadRecord();
+    if(record && record.data && typeof record.data==='object'){
+      DB = record.data;
+      cloudLastUpdatedAt = record.updated_at || null;
       normalizeDB();
       cloudReady = true;
+      setupRealtimeSync();
       showCloudStatus('Connected to Supabase');
       return;
     }
-    // First installation: create the current application's default dataset in Supabase.
+    /* First installation only: create defaults when the cloud row genuinely
+       does not exist. Never reset an existing cloud database. */
     DB = emptyData();
     ensureDefaultAdmin();
-    await cloudSaveDB();
     cloudReady = true;
+    await cloudSaveDB();
+    setupRealtimeSync();
     showCloudStatus('Supabase connected — new database created');
   }catch(error){
     console.error('Supabase connection failed:', error);
     cloudReady = false;
-    // Safe fallback: keep the existing local data so the app is not destroyed if the network is down.
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){ try{ DB=JSON.parse(raw); normalizeDB(); }catch(e){ DB=emptyData(); ensureDefaultAdmin(); } }
     else { DB=emptyData(); ensureDefaultAdmin(); }
